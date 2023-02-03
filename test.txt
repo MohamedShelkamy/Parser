@@ -1,0 +1,14 @@
+let a = 3;
+let b = 4;
+let c = (a + b) / 2;
+let d = c * (a + b);
+dim array[3+4];
+let array[0] = a;
+let array[1] = b;
+let array[2] = c;
+let array[3] = d;
+print ("Hello world, of course, it's mandatory :)");
+print (c);
+print (array[3]);
+let c = (a + b) / 2;
+print (c);
