@@ -21,17 +21,24 @@ alpha     [A-Za-z]
 "["             {return (LBRACKET);}
 "]"             {return (RBRACKET);}
 "dim"           {return (DIM);}
-"print"         {return (PRINT);}
+"print"           {return (PRINT);}
 ";"	           {return (TOK_SEMICOLON);}
 {digit}+        {
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
-			 } 
-\"[^\"]*\"      {   
-                   
-                   strncpy( yylval.name, yytext + 1, yyleng - 2);
-                   return (STRING);
-                }
+			 }
+
+\\              {printf("Escape character \\ detected.\n");}
+
+\"[^\"]*\"  {
+               
+               strncpy( yylval.name, yytext + 1, yyleng - 2);
+               return (STRING);
+                
+        }
+
+                              
+
 [a-z][A-Za-z0-9]*   {sscanf(yytext, "%s", yylval.name); return(TOK_IDENT);}
 [\n] 	          {linenumber++;}
 
