@@ -29,10 +29,11 @@ prog: prog_lines
       ;
 
 prog_lines :   | prog_line TOK_SEMICOLON prog_lines
+           ;  
 
-prog_line :    | assignment
-               | dim
-               | print
+prog_line :    | assignment 
+               | dim   
+               | print 
           ;
 
 assignment : LET TOK_IDENT EQ expr 
@@ -40,7 +41,7 @@ assignment : LET TOK_IDENT EQ expr
             insert($4,$2);
             
            }
-           | LET TOK_IDENT LBRACKET expr RBRACKET EQ expr
+           | LET TOK_IDENT LBRACKET expr RBRACKET EQ expr 
            { 
            set_array_value($7,$4 ,$2);
            }
@@ -51,11 +52,9 @@ dim  :      DIM TOK_IDENT LBRACKET expr RBRACKET
             insert_arr($4,$2);
             };
 
-print :    PRINT LPAREN expr RPAREN  {//printf("%d\n",$3);
-                                   puts("hellllo");}
+print :    PRINT LPAREN expr RPAREN {printf("%d\n",$3);}
            |
-           PRINT LPAREN STRING RPAREN{//printf("%s\n",$3);
-           puts("hellllo2222");}
+           PRINT LPAREN STRING RPAREN{printf("%s\n",$3);}
            ;
 
 expr:

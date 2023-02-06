@@ -52,8 +52,7 @@ void insert(int value, char name[]){
     position=is_defined(name);
     if(position== -1){     
       if(v_flag==1){
-       printf("verbose mode : identifier %s was defined on line %d with value = %d\n", name,linenumber ,value);
-        
+       printf("verbose mode : identifier %s was defined on line %d with value equal to %d\n", name,linenumber ,value);
       }
       tab[ptr].val=value;
       strcpy(tab[ptr].name, name);
@@ -112,7 +111,9 @@ void set_array_value(int value,int pos ,char name[]){
     if(position != -1){
       
       if(pos < arrtab[position].size){
-        arrtab[position].arr[pos]=value;}
+        arrtab[position].arr[pos]=value;
+        printf("verbose mode : on line %d the array element %d was assigned value equal to %d\n",linenumber,pos,value);
+        }
        else{
         yyerror("exceded the size of the array");
        }
