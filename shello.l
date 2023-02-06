@@ -6,9 +6,10 @@ int linenumber = 1;
 
 
 digit	([0-9])
-alpha   [A-Za-z]
+alpha     [A-Za-z]
 
 %%
+[ \t\r]+ 
 "let"           {return (LET);}
 "="             {return (EQ);}
 "+"             {return (PLUS);}
@@ -32,7 +33,11 @@ alpha   [A-Za-z]
                    return (STRING);
                 }
 [a-z][A-Za-z0-9]*   {sscanf(yytext, "%s", yylval.name); return(TOK_IDENT);}
-[\n] 	{linenumber++;}
+[\n] 	          {linenumber++;}
+
+.              {
+                   printf("Unrecognized character: %s\n", yytext);
+               }
 %%
 
 int yywrap(){

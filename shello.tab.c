@@ -518,9 +518,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    28,    28,    31,    31,    33,    33,    34,    35,    38,
-      43,    49,    54,    57,    62,    67,    71,    81,    85,    89,
-      93
+       0,    28,    28,    31,    31,    34,    34,    35,    36,    39,
+      44,    50,    55,    57,    61,    66,    70,    80,    84,    88,
+      92
 };
 #endif
 
@@ -1105,7 +1105,7 @@ yyreduce:
   switch (yyn)
     {
   case 9: /* assignment: LET TOK_IDENT EQ expr  */
-#line 39 "shello.y"
+#line 40 "shello.y"
            {
             insert((yyvsp[0].int_val),(yyvsp[-2].name));
             
@@ -1114,7 +1114,7 @@ yyreduce:
     break;
 
   case 10: /* assignment: LET TOK_IDENT LBRACKET expr RBRACKET EQ expr  */
-#line 44 "shello.y"
+#line 45 "shello.y"
            { 
            set_array_value((yyvsp[0].int_val),(yyvsp[-3].int_val) ,(yyvsp[-5].name));
            }
@@ -1122,7 +1122,7 @@ yyreduce:
     break;
 
   case 11: /* dim: DIM TOK_IDENT LBRACKET expr RBRACKET  */
-#line 50 "shello.y"
+#line 51 "shello.y"
             {
             insert_arr((yyvsp[-1].int_val),(yyvsp[-3].name));
             }
@@ -1130,37 +1130,35 @@ yyreduce:
     break;
 
   case 12: /* print: PRINT LPAREN expr RPAREN  */
-#line 54 "shello.y"
-                                     {//printf("%d\n",$3);
-                                   puts("hellllo");}
-#line 1137 "shello.tab.c"
+#line 55 "shello.y"
+                                    {printf("%d\n",(yyvsp[-1].int_val));}
+#line 1136 "shello.tab.c"
     break;
 
   case 13: /* print: PRINT LPAREN STRING RPAREN  */
 #line 57 "shello.y"
-                                     {//printf("%s\n",$3);
-           puts("hellllo2222");}
-#line 1144 "shello.tab.c"
+                                     {printf("%s\n",(yyvsp[-1].name));}
+#line 1142 "shello.tab.c"
     break;
 
   case 14: /* expr: TOK_NUM  */
-#line 63 "shello.y"
+#line 62 "shello.y"
   {
     (yyval.int_val) = (yyvsp[0].int_val);
   }
-#line 1152 "shello.tab.c"
+#line 1150 "shello.tab.c"
     break;
 
   case 15: /* expr: TOK_IDENT LBRACKET expr RBRACKET  */
-#line 67 "shello.y"
+#line 66 "shello.y"
                                   {
     (yyval.int_val) = get_array_value((yyvsp[-1].int_val),(yyvsp[-3].name));
   }
-#line 1160 "shello.tab.c"
+#line 1158 "shello.tab.c"
     break;
 
   case 16: /* expr: TOK_IDENT  */
-#line 72 "shello.y"
+#line 71 "shello.y"
   {
     int i = is_defined((yyvsp[0].name));
     if (i == -1) {
@@ -1170,43 +1168,43 @@ yyreduce:
       (yyval.int_val) = getvalue(i);
     }
   }
-#line 1174 "shello.tab.c"
+#line 1172 "shello.tab.c"
     break;
 
   case 17: /* expr: expr PLUS expr  */
-#line 82 "shello.y"
+#line 81 "shello.y"
   {
     (yyval.int_val) = (yyvsp[-2].int_val) + (yyvsp[0].int_val);
   }
-#line 1182 "shello.tab.c"
+#line 1180 "shello.tab.c"
     break;
 
   case 18: /* expr: expr DIV expr  */
-#line 86 "shello.y"
+#line 85 "shello.y"
   {
     (yyval.int_val) = (yyvsp[-2].int_val) / (yyvsp[0].int_val);
   }
-#line 1190 "shello.tab.c"
+#line 1188 "shello.tab.c"
     break;
 
   case 19: /* expr: expr MUL expr  */
-#line 90 "shello.y"
+#line 89 "shello.y"
   {
     (yyval.int_val) = (yyvsp[-2].int_val) * (yyvsp[0].int_val);
   }
-#line 1198 "shello.tab.c"
+#line 1196 "shello.tab.c"
     break;
 
   case 20: /* expr: LPAREN expr RPAREN  */
-#line 94 "shello.y"
+#line 93 "shello.y"
   {
     (yyval.int_val) = (yyvsp[-1].int_val);
   }
-#line 1206 "shello.tab.c"
+#line 1204 "shello.tab.c"
     break;
 
 
-#line 1210 "shello.tab.c"
+#line 1208 "shello.tab.c"
 
       default: break;
     }
@@ -1399,7 +1397,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 98 "shello.y"
+#line 97 "shello.y"
 
 
 
