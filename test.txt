@@ -1,14 +1,32 @@
-let a=3;
-let b=4;
-let c=a+b/2;
-let d=c*(a+b);
-dim array[3+4];
-let array[0]=a;
-let array[1]=b;
-let array[2]=c;
-let array[3]=d;
-print("Hello world,of course, it'smandatory:)");
+let a = 3;
+let b = 4;
+let c = a + b / 2;
+let d = c * (a + b);
+dim array[  
+3+4];
+let 
+array[0] = a;
+let array[1] = b;
+let array[2] = c;
+let array[3] = d;
 print(c);
-print(array[3]);
-let c=(a+b)/2;
-print(c);
+print(d);
+if(b < (d / c)){
+  let a = 3;
+  print("i am in the outter if condition");
+  if(a==2){
+    print("i am in the inner if condition");}
+  else{
+    print("i am in the inner else");
+  }
+}
+else{
+  print("i am in the outter else"); 
+  let a = 3;
+  let b = 2;  
+}
+
+print(a);
+
+
+

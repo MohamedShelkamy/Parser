@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include "shello.tab.h"
+#include "var_helper.h"
 int linenumber = 1;
 %}
 
@@ -20,22 +21,33 @@ alpha     [A-Za-z]
 ")"             {return (RPAREN);}
 "["             {return (LBRACKET);}
 "]"             {return (RBRACKET);}
+"{"             {return LBRACE;}
+"}"             {return RBRACE;}
 "dim"           {return (DIM);}
-"print"           {return (PRINT);}
+"print"         {return (PRINT);}
 ";"	           {return (TOK_SEMICOLON);}
+"<="            { return LE; }
+">="            { return GE; }
+"<"             { return LT; }
+">"             { return GT; }
+"=="            { return EEQ;}
+"!="            { return NE; }
+"&&"            { return AND;}
+"||"            { return OR; }
+"if"            { return IF; }
+"else"          { return ELSE;}
+
 {digit}+        {
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
 			 }
 
-\\              {printf("Escape character \\ detected.\n");}
-
-\"[^\"]*\"  {
+\"(\\.|[^\"\\])*\" {
                
-               strncpy( yylval.name, yytext + 1, yyleng - 2);
+               escape(yytext,yylval.name);
                return (STRING);
                 
-        }
+                   }
 
                               
 
