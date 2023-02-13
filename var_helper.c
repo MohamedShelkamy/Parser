@@ -112,7 +112,9 @@ void set_array_value(int value,int pos ,char name[]){
       
       if(pos < arrtab[position].size){
         arrtab[position].arr[pos]=value;
+        if(v_flag==1){
         printf("verbose mode : on line %d the array element %d was assigned value equal to %d\n",linenumber,pos,value);
+        }
         }
        else{
         yyerror("exceded the size of the array");
@@ -140,6 +142,18 @@ int get_array_value(int pos ,char name[]){
     else{
        yyerror("not defined array");
     }
+}
+
+void escape(char* in_word,char* out_word){
+  
+  int length = strlen(in_word);
+  int j = 0;
+  for (int i = 1; i < length-1; i++) {
+    if (in_word[i] != '\\') {
+      out_word[j++] = in_word[i];
+    }
+  }
+  out_word[j] = '\0';
 }
 
 // the error function
