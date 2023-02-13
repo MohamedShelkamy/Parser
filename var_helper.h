@@ -1,7 +1,5 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
-
-
 int is_defined(char name[]);
 
 int yyerror(char *s);
@@ -17,5 +15,7 @@ void insert_arr(int value, char name[]);
 void set_array_value(int value,int pos ,char name[]);
 
 int get_array_value(int pos ,char name[]);
+
+void escape(char* in_word,char* out_word);
 
 #endif
