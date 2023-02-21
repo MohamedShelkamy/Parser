@@ -1,8 +1,9 @@
 #include <stdio.h>  
 #include <stdlib.h>
 #include <string.h> 
-#include "var_helper.h"
 #include "main.h"
+#include "var_helper.h"
+
 
 extern int linenumber;
 extern int v_flag ;
@@ -145,7 +146,6 @@ int get_array_value(int pos ,char name[]){
 }
 
 void escape(char* in_word,char* out_word){
-  
   int length = strlen(in_word);
   int j = 0;
   for (int i = 1; i < length-1; i++) {
@@ -163,3 +163,34 @@ int yyerror(char *s)
 	return 0;
 }
 
+myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoken_t op, mytokclosure_t* operand) {
+    
+    myexpr_t *expr = malloc(sizeof(myexpr_t));
+    expr->kind = kind;
+
+    if (kind == EXPR_UNARY && op==TOK_NUMB){ 
+      expr->op_pair[0].operand = operand;
+      expr->op_pair[0].operation = op;}
+
+    else{
+      if(kind == EXPR_UNARY){
+        expr->op_pair[0].operand->expr=left;
+        expr->op_pair[0].operation= op; 
+      }
+    }
+
+    if (kind == EXPR_BINARY || kind == EXPR_TERNARY) {
+        
+        expr->op_pair[0].operand->expr=left;
+        expr->op_pair[0].operation= op;
+        expr->op_pair[1].operand->expr = right;
+        expr->op_pair[1].operation = op;
+    }
+
+    if (kind == EXPR_TERNARY) {
+        expr->op_pair[2].operand = NULL;
+        expr->op_pair[2].operation = op;
+    }
+
+    return expr;
+}

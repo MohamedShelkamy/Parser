@@ -2,26 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-#include "var_helper.h"
 #include "main.h"
+#include "var_helper.h"
 int yylex();
-int global_variable = 1;
-
 %}
 
 %token LET EQ PLUS DIV MUL SUB LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT TOK_SEMICOLON 
        TOK_NUM STRING TOK_IDENT ESCAPE LE GE LT 
-       GT EEQ NE AND OR LBRACE RBRACE
-%token IF ELSE
+       GT EEQ NE AND OR LBRACE RBRACE IF ELSE
+
+
 %union{
 	char name[100];
   int int_val;
+  myexpr_t* expr;
 }
 
 %type<name>    TOK_IDENT
 %type<int_val> TOK_NUM
-%type<int_val> expr
+%type<expr>    expr
 %type<name>    STRING
 %left          PLUS SUB
 %left          MUL  DIV
@@ -34,8 +34,7 @@ prog: prog_lines
       ;
 
 prog_lines :   | prog_line TOK_SEMICOLON prog_lines
-               | if_else_body prog_lines
-               | if_body prog_lines
+               | if_stmt prog_lines
            ;   
 
 prog_line :    | assignment 
@@ -45,121 +44,97 @@ prog_line :    | assignment
 
 assignment : LET TOK_IDENT EQ expr 
            {
-          if(global_variable){
-            insert($4,$2);}
-            
+                    
            }
            | LET TOK_IDENT LBRACKET expr RBRACKET EQ expr 
            { 
-           if(global_variable){
-             set_array_value($7,$4 ,$2);}
+ 
            }
            ;
 
 dim  :      DIM TOK_IDENT LBRACKET expr RBRACKET 
             {
-            if(global_variable){
-              insert_arr($4,$2);}
+              
             };
 
-print :    PRINT LPAREN expr RPAREN {if(global_variable){ 
-           printf("%d\n",$3);} }
+print :    PRINT LPAREN expr RPAREN { 
+           } 
            |
            
            PRINT LPAREN STRING RPAREN{
-            if(global_variable){
-               printf("%s\n",$3);
-            }
+            
            }
            ;
 
-if_else_body : else_stmt prog_lines RBRACE {global_variable = 1;}  
-             ;
-if_body      : if_stmt prog_lines RBRACE
-             ;
-else_stmt    : if_stmt prog_lines RBRACE ELSE LBRACE {global_variable = !global_variable;}
-          ; 
-
-if_stmt : IF LPAREN expr RPAREN LBRACE{
-  
-if($3){
-  global_variable = 1;
-}
-else{
-  global_variable = 0;
-}
-
-};   
+if_stmt : IF LPAREN expr RPAREN LBRACE prog_lines RBRACE ELSE LBRACE prog_lines RBRACE{};   
 
 
 
 expr:
-  TOK_NUM
+ TOK_NUM
   {
-    $$ = $1;
+    mytokclosure_t* operand =(mytokclosure_t*)malloc(sizeof(mytokclosure_t));
+    operand->int_val=$1;
+    operand->tok=TOK_NUMB;
+    $$=create_expr(EXPR_UNARY,NULL,NULL,TOK_NUMB,operand);
   }
-  |
+  
+  /*|
   TOK_IDENT LBRACKET expr RBRACKET{
     $$ = get_array_value($3,$1);
   } 
   
   | TOK_IDENT
   {
-    int i = is_defined($1);
-    if (i == -1) {
-      yyerror("Undeclared identifier");
-      exit(1);
-    } else {
-      $$ = getvalue(i);
-    }
-  }
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_PLUS,NULL);
+  }*/
   | expr PLUS expr
   {
-    $$ = $1 + $3;
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_PLUS,NULL);
   }
   | expr DIV expr
   {
-    $$ = $1 / $3;
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_DIV,NULL);
   }
   | expr MUL expr
   {
-    $$ = $1 * $3;
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_MUL,NULL);
   }
   | expr AND expr
   {
-    $$=$1 && $3;
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_AND,NULL);
   }
   | expr OR expr
   {
-    $$=$1 || $3;
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_OR,NULL);
   }
   | expr GT expr
   {
-    $$=$1 > $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_GT,NULL); 
   }
-   | expr LT expr
-  {
-    $$=$1 < $3; 
+  | expr LT expr
+  {     
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_LT,NULL); 
   }
   | expr EEQ expr
   {
-    $$=$1 == $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_EEQ,NULL); 
   }
   | expr NE expr
   {
-    $$=$1 != $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_NE,NULL); 
   }
   | expr GE expr
   {
-    $$=$1 >= $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_GE,NULL);
   }
   | expr LE expr
   {
-    $$ = $1 <= $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_LE,NULL); 
   }
   | LPAREN expr RPAREN
   {
-    $$ = $2;
+   $$=create_expr(EXPR_UNARY,$2,NULL,TOK_EXPR,NULL);
   }
   ;
 %%

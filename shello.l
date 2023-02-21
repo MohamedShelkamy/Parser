@@ -1,7 +1,9 @@
 %{
 #include <stdio.h>
-#include "shello.tab.h"
 #include "var_helper.h"
+#include "main.h"
+#include "shello.tab.h"
+
 int linenumber = 1;
 %}
 
