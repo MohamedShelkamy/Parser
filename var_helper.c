@@ -163,21 +163,20 @@ int yyerror(char *s)
 	return 0;
 }
 
-myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoken_t op, mytokclosure_t* operand) {
+myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoken_t op) {
     
-    myexpr_t *expr = malloc(sizeof(myexpr_t));
+    myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+    if (!expr) {
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+    }
     expr->kind = kind;
 
-    if (kind == EXPR_UNARY && op==TOK_NUMB){ 
-      expr->op_pair[0].operand = operand;
-      expr->op_pair[0].operation = op;}
-
-    else{
-      if(kind == EXPR_UNARY){
+    if(kind == EXPR_UNARY){
         expr->op_pair[0].operand->expr=left;
         expr->op_pair[0].operation= op; 
       }
-    }
+    
 
     if (kind == EXPR_BINARY || kind == EXPR_TERNARY) {
         
@@ -193,4 +192,54 @@ myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoke
     }
 
     return expr;
+}
+myexpr_t* create_expr_const(myexprkind_t kind,mytoken_t op,int value){
+      
+      myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+      if (!expr) {
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      } 
+      expr->kind = kind;
+      mytokclosure_t* operand =(mytokclosure_t*)malloc(sizeof(mytokclosure_t));
+      operand->int_val=value;
+      operand->tok=TOK_NUMB;
+      expr->op_pair[0].operand = operand;
+      expr->op_pair[0].operation = op;
+      return expr;
+}
+
+myexpr_t* create_expr_var(myexprkind_t kind,mytoken_t op,char var_name[100]){
+
+      myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+      if (!expr) {
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      }
+      expr->kind = kind;
+      mytokclosure_t* operand =(mytokclosure_t*)malloc(sizeof(mytokclosure_t));
+      operand->tok=TOK_VAR;
+      strncpy(operand->var_name, var_name, sizeof(operand->var_name) - 1);
+      expr->op_pair[0].operand = operand;
+      expr->op_pair[0].operation = op;
+      return expr;
+}
+
+
+void free_expr(myexpr_t* expr) {
+    if (expr) {
+        for (int i = 0; i < 3; i++) {
+            if (expr->op_pair[i].operand) {
+                free_tokclosure(expr->op_pair[i].operand);
+            }
+        }
+        free(expr);
+    }
+}
+
+void free_tokclosure(mytokclosure_t* tc) {
+    if (tc->tok == TOK_EXPR) {
+        free_expr((myexpr_t*)tc->expr);
+    }
+    free(tc);
 }
