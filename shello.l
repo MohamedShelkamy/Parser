@@ -13,7 +13,6 @@ alpha     [A-Za-z]
 
 %%
 [ \t\r]+ 
-"let"           {return (LET);}
 "="             {return (EQ);}
 "+"             {return (PLUS);}
 "/"             {return (DIV);}
