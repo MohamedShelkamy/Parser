@@ -19,29 +19,29 @@ typedef enum {
 	TOK_NE, 
 	TOK_AND, 
 	TOK_OR, 
-} mytoken_t;
+} token_t;
 
 typedef struct {
-	mytoken_t tok;
-	char var_name[100];
-	int int_val;
+	token_t tok;
+	char  var_name[100];
+	int   int_val;
 	float float_val;
 	void* expr;
-} mytokclosure_t;
+} tokclosure_t;
 
 typedef enum {
 	EXPR_UNARY,
 	EXPR_BINARY,
 	EXPR_TERNARY
-} myexprkind_t;
+} exprkind_t;
 
 typedef struct {
-	myexprkind_t kind;
+	exprkind_t kind;
 	struct {
-		mytokclosure_t* operand;
-		mytoken_t operation;
+		tokclosure_t* operand;
+		token_t operation;
 	} op_pair[3];
-} myexpr_t;
+} expr_t;
 
 
 int is_defined(char name[]);
@@ -62,14 +62,14 @@ int get_array_value(int pos ,char name[]);
 
 void escape(char* in_word,char* out_word);
 
-myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoken_t op);
+expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 
-myexpr_t* create_expr_const(myexprkind_t kind,mytoken_t op,int value);
+expr_t* create_expr_const(exprkind_t kind,token_t op,int value);
 
-myexpr_t* create_expr_var(myexprkind_t kind,mytoken_t op, char var_name[100]);
+expr_t* create_expr_var(exprkind_t kind,token_t op, char var_name[100]);
 
-void free_expr(myexpr_t* expr);
+void free_expr(expr_t* expr);
 
-void free_tokclosure(mytokclosure_t* tc);
+void free_tokclosure(tokclosure_t* tc);
 
 #endif

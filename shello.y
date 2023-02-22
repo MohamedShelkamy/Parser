@@ -5,9 +5,13 @@
 #include "main.h"
 #include "var_helper.h"
 int yylex();
+
+tokclosure_t* serialized_tokens = NULL;
+size_t serialized_tokens_len = 0;
+
 %}
 
-%token LET EQ PLUS DIV MUL SUB LPAREN RPAREN 
+%token EQ PLUS DIV MUL SUB LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT TOK_SEMICOLON 
        TOK_NUM STRING TOK_IDENT ESCAPE LE GE LT 
        GT EEQ NE AND OR LBRACE RBRACE IF ELSE
@@ -16,43 +20,51 @@ int yylex();
 %union{
 	char name[100];
   int int_val;
-  myexpr_t* expr;
+  expr_t* expr;
 }
 
 %type<name>    TOK_IDENT
 %type<int_val> TOK_NUM
 %type<expr>    expr
-%type<expr>    assignment
 %type<name>    STRING
 %left          PLUS SUB
 %left          MUL  DIV
 %left          EEQ NE LE GE
 %left          LT GT AND OR EQ
 
+%start      prog
+
 %%
 
-prog: prog_lines 
-      ;
+builtin:    print
+        ;
 
-prog_lines :   | prog_line TOK_SEMICOLON prog_lines
-               | if_stmt prog_lines
-           ;   
+statement:  builtin TOK_SEMICOLON
+            | 
+            expr TOK_SEMICOLON
+            ;
 
-prog_line :    | print
-               | expr 
-               ;
+code_block: statement
+            |
+            code_block statement
+            |
+            LBRACE code_block RBRACE 
+            |
+            if_stmt 
+            ;
+
+prog:       code_block 
+            ;
 
 
-assignment : TOK_IDENT EQ expr 
-            {
-            $$=create_expr(EXPR_BINARY,create_expr_var(EXPR_UNARY,TOK_VAR,$1),$3,TOK_ASSIGNMENT); 
-            }
-           ;
+
+
+
 
 
 print :    PRINT LPAREN expr RPAREN 
            {
-
+           
            } 
            |
            
@@ -62,10 +74,14 @@ print :    PRINT LPAREN expr RPAREN
            }
            ;
 
-if_stmt : IF LPAREN expr RPAREN LBRACE prog_lines RBRACE ELSE LBRACE prog_lines RBRACE
+
+if_stmt : IF LPAREN expr RPAREN LBRACE code_block RBRACE ELSE LBRACE code_block RBRACE
           {
 
           };   
+
+
+
 
 expr:
  TOK_NUM
@@ -76,9 +92,9 @@ expr:
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
   }
-  | assignment 
+  | expr EQ expr  
   {
-    $$=$1;                 
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT);                 
   }
   | expr PLUS expr
   {

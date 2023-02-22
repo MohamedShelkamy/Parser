@@ -123,7 +123,7 @@ void set_array_value(int value,int pos ,char name[]){
     }
 
     else{
-       yyerror("not defined array");
+      yyerror("not defined array");
     }
 }
 
@@ -163,9 +163,9 @@ int yyerror(char *s)
 	return 0;
 }
 
-myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoken_t op) {
+expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     
-    myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+    expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
     if (!expr) {
         fprintf(stderr, "Error: Out of memory\n");
         exit(1);
@@ -193,15 +193,15 @@ myexpr_t* create_expr(myexprkind_t kind, myexpr_t *left, myexpr_t *right, mytoke
 
     return expr;
 }
-myexpr_t* create_expr_const(myexprkind_t kind,mytoken_t op,int value){
+expr_t* create_expr_const(exprkind_t kind,token_t op,int value){
       
-      myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+      expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
       if (!expr) {
         fprintf(stderr, "Error: Out of memory\n");
         exit(1);
       } 
       expr->kind = kind;
-      mytokclosure_t* operand =(mytokclosure_t*)malloc(sizeof(mytokclosure_t));
+      tokclosure_t* operand =(tokclosure_t*)malloc(sizeof(tokclosure_t));
       operand->int_val=value;
       operand->tok=TOK_NUMB;
       expr->op_pair[0].operand = operand;
@@ -209,15 +209,15 @@ myexpr_t* create_expr_const(myexprkind_t kind,mytoken_t op,int value){
       return expr;
 }
 
-myexpr_t* create_expr_var(myexprkind_t kind,mytoken_t op,char var_name[100]){
+expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
 
-      myexpr_t *expr =(myexpr_t*)malloc(sizeof(myexpr_t));
+      expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
       if (!expr) {
         fprintf(stderr, "Error: Out of memory\n");
         exit(1);
       }
       expr->kind = kind;
-      mytokclosure_t* operand =(mytokclosure_t*)malloc(sizeof(mytokclosure_t));
+      tokclosure_t* operand =(tokclosure_t*)malloc(sizeof(tokclosure_t));
       operand->tok=TOK_VAR;
       strncpy(operand->var_name, var_name, sizeof(operand->var_name) - 1);
       expr->op_pair[0].operand = operand;
@@ -226,7 +226,7 @@ myexpr_t* create_expr_var(myexprkind_t kind,mytoken_t op,char var_name[100]){
 }
 
 
-void free_expr(myexpr_t* expr) {
+void free_expr(expr_t* expr) {
     if (expr) {
         for (int i = 0; i < 3; i++) {
             if (expr->op_pair[i].operand) {
@@ -237,9 +237,9 @@ void free_expr(myexpr_t* expr) {
     }
 }
 
-void free_tokclosure(mytokclosure_t* tc) {
+void free_tokclosure(tokclosure_t* tc) {
     if (tc->tok == TOK_EXPR) {
-        free_expr((myexpr_t*)tc->expr);
+        free_expr((expr_t*)tc->expr);
     }
     free(tc);
 }
