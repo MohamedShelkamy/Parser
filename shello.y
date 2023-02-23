@@ -8,11 +8,12 @@ int yylex();
 
 tokclosure_t* Program_tokens = NULL;
 size_t Program_tokens_len = 0;
+tokclosure_t new_token;
 
 %}
 
 %token EQ PLUS DIV MUL SUB LPAREN RPAREN 
-       LBRACKET RBRACKET DIM PRINT TOK_SEMICOLON 
+       LBRACKET RBRACKET DIM PRINT SEMICOLON 
        TOK_NUM STRING TOK_IDENT LE GE LT 
        GT EEQ NE AND OR LBRACE RBRACE IF ELSE
 
@@ -64,37 +65,49 @@ prog:       code_block
 
 print_symp  : PRINT
             {
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            new_token = create_token_type(TOK_PRINT);
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+            Program_tokens[Program_tokens_len-1] = new_token;  
             }
             ;
 
 lparen      : LPAREN
             {
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            new_token = create_token_type(TOK_LPAREN);
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+            Program_tokens[Program_tokens_len-1] = new_token;            
             }
             ;
 
 rparen      : RPAREN
             {
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            new_token = create_token_type(TOK_RPAREN);
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+            Program_tokens[Program_tokens_len-1] = new_token;            
             }
             ;
 
-lbracket    : LBRACE
+lbrace      : LBRACE
             {
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            new_token = create_token_type(TOK_LBRACE);
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+            Program_tokens[Program_tokens_len-1] = new_token;            
             }
             ;    
 
-rbracket    : RBRACE
+rbrace      : RBRACE
             {
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            new_token = create_token_type(TOK_RBRACE);
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+            Program_tokens[Program_tokens_len-1] = new_token;            
             }
             ;   
 
-tok_semicolon : TOK_SEMICOLON
+tok_semicolon : SEMICOLON
               {
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              new_token = create_token_type(TOK_SEMICOLON);
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+              Program_tokens[Program_tokens_len-1] = new_token;              
               }
               ;
 
@@ -106,25 +119,31 @@ print     :   print_symp lparen final_expr rparen
 
 If        :   IF
               {
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              new_token = create_token_type(TOK_IF);
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+              Program_tokens[Program_tokens_len-1] = new_token;              
               }
               ;
 
 Else          : ELSE
               {
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              new_token = create_token_type(TOK_ELSE);
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+              Program_tokens[Program_tokens_len-1] = new_token;              
               }
               ;
 
 string    :   STRING
               {
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              new_token = create_token_string(TOK_STRING,$1);
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+              Program_tokens[Program_tokens_len-1] = new_token;              
               }
               ; 
 
-if_stmt : If lparen final_expr rparen lbracket code_block rbracket Else lbracket code_block rbracket
+if_stmt : If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
           |
-          If lparen final_expr rparen lbracket code_block rbracket
+          If lparen final_expr rparen lbrace code_block rbrace
           ;   
 
 

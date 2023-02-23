@@ -10,6 +10,8 @@ extern int v_flag ;
 extern int i_flag ;
 extern int d_flag ;
 
+
+
 struct symtab{                                      
 	char name[20];                                  
 	int val;                                  
@@ -190,6 +192,7 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
 
     return expr;
 }
+
 expr_t* create_expr_const(exprkind_t kind,token_t op,int value){
       
       expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
@@ -234,10 +237,25 @@ tokclosure_t create_token(token_t tok,char  var_name[100] ,int int_val ,float fl
 
 }
 
+tokclosure_t create_token_type(token_t tok){
+      tokclosure_t new_token ;
+      new_token.tok=tok;
+      return new_token;
+}
 
+tokclosure_t create_token_string(token_t tok,char var_name[100]){
+      tokclosure_t new_token ;
+      new_token.tok=tok;
+      strcpy(new_token.var_name, var_name);
 
+      return new_token;
+}
 
+tokclosure_t create_token_number(token_t tok ,int int_val){
+      tokclosure_t new_token ;
+      new_token.int_val=int_val;
 
+}
 
 
 void free_expr(expr_t* expr) {

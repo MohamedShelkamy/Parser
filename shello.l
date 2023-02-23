@@ -26,7 +26,7 @@ alpha     [A-Za-z]
 "}"             {return RBRACE;}
 "dim"           {return (DIM);}
 "print"         {return (PRINT);}
-";"	            {return (TOK_SEMICOLON);}
+";"	            {return (SEMICOLON);}
 "<="            { return LE; }
 ">="            { return GE; }
 "<"             { return LT; }
