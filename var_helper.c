@@ -253,6 +253,14 @@ void add_token_number(token_t tok ,int int_val){
       Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
+void add_token_expr(token_t tok ,expr_t *expr){
+      tokclosure_t new_token ;
+      new_token.tok=tok;
+      new_token.expr=(void*)expr;
+      Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      Program_tokens[Program_tokens_len-1] = new_token; 
+
+}
 
 
 void free_expr(expr_t* expr) {

@@ -37,6 +37,9 @@ builtin     : print
             ;
 
 final_expr : expr
+            {
+            add_token_expr(TOK_EXPR,$1);
+            }
             ;
 
 statement:  builtin tok_semicolon

@@ -77,6 +77,8 @@ void add_token_string(token_t tok,char var_name[100]);
 
 void add_token_number(token_t tok ,int int_val);
 
+void add_token_expr(token_t tok ,expr_t *expr);
+
 expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 
 expr_t* create_expr_const(exprkind_t kind,token_t op,int value);
