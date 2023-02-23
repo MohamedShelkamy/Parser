@@ -6,14 +6,14 @@
 #include "var_helper.h"
 int yylex();
 
-tokclosure_t* serialized_tokens = NULL;
-size_t serialized_tokens_len = 0;
+tokclosure_t* Program_tokens = NULL;
+size_t Program_tokens_len = 0;
 
 %}
 
 %token EQ PLUS DIV MUL SUB LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT TOK_SEMICOLON 
-       TOK_NUM STRING TOK_IDENT ESCAPE LE GE LT 
+       TOK_NUM STRING TOK_IDENT LE GE LT 
        GT EEQ NE AND OR LBRACE RBRACE IF ELSE
 
 
@@ -36,8 +36,8 @@ size_t serialized_tokens_len = 0;
 
 %%
 
-builtin:  print
-          ;
+builtin     : print
+            ;
 
 final_expr : expr
             ;
@@ -54,6 +54,8 @@ code_block: statement
             LBRACE code_block RBRACE 
             |
             if_stmt 
+            |
+            code_block if_stmt
             ;
 
 prog:       code_block 
@@ -61,38 +63,64 @@ prog:       code_block
 
 
 print_symp  : PRINT
+            {
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            }
             ;
 
 lparen      : LPAREN
+            {
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            }
             ;
 
 rparen      : RPAREN
+            {
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            }
             ;
 
 lbracket    : LBRACE
+            {
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            }
             ;    
 
 rbracket    : RBRACE
+            {
+            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+            }
             ;   
 
 tok_semicolon : TOK_SEMICOLON
+              {
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              }
               ;
 
-If            : IF 
+
+print     :   print_symp lparen final_expr rparen 
+              |           
+              print_symp lparen string rparen 
+              ;
+
+If        :   IF
+              {
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              }
               ;
 
 Else          : ELSE
+              {
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              }
               ;
 
-string      : STRING
-            ; 
-
-
-print :    print_symp lparen final_expr rparen 
-           |           
-           print_symp lparen string rparen 
-           ;
-
+string    :   STRING
+              {
+              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));  
+              }
+              ; 
 
 if_stmt : If lparen final_expr rparen lbracket code_block rbracket Else lbracket code_block rbracket
           |
@@ -101,6 +129,7 @@ if_stmt : If lparen final_expr rparen lbracket code_block rbracket Else lbracket
 
 
 expr:
+ 
  TOK_NUM
   {
     $$=create_expr_const(EXPR_UNARY,TOK_NUMB,$1);

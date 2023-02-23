@@ -62,6 +62,8 @@ int get_array_value(int pos ,char name[]);
 
 void escape(char* in_word,char* out_word);
 
+tokclosure_t create_token(token_t tok,char  var_name[100] ,int int_val ,float float_val ,void* expr);
+
 expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 
 expr_t* create_expr_const(exprkind_t kind,token_t op,int value);

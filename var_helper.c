@@ -222,6 +222,23 @@ expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
       return expr;
 }
 
+tokclosure_t create_token(token_t tok,char  var_name[100] ,int int_val ,float float_val ,void* expr){
+
+      tokclosure_t new_token ;
+      new_token.tok=tok;
+      strcpy(new_token.var_name, var_name);
+      new_token.int_val=int_val;
+      new_token.expr=expr;
+
+      return new_token;
+
+}
+
+
+
+
+
+
 
 void free_expr(expr_t* expr) {
     if (expr) {
