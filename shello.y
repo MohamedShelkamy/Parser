@@ -6,10 +6,6 @@
 #include "var_helper.h"
 int yylex();
 
-tokclosure_t* Program_tokens = NULL;
-size_t Program_tokens_len = 0;
-tokclosure_t new_token;
-
 %}
 
 %token EQ PLUS DIV MUL SUB LPAREN RPAREN 
@@ -65,49 +61,37 @@ prog:       code_block
 
 print_symp  : PRINT
             {
-            new_token = create_token_type(TOK_PRINT);
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-            Program_tokens[Program_tokens_len-1] = new_token;  
+            add_token_type(TOK_PRINT);
             }
             ;
 
 lparen      : LPAREN
             {
-            new_token = create_token_type(TOK_LPAREN);
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-            Program_tokens[Program_tokens_len-1] = new_token;            
+            add_token_type(TOK_LPAREN);           
             }
             ;
 
 rparen      : RPAREN
             {
-            new_token = create_token_type(TOK_RPAREN);
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-            Program_tokens[Program_tokens_len-1] = new_token;            
+            add_token_type(TOK_RPAREN);            
             }
             ;
 
 lbrace      : LBRACE
             {
-            new_token = create_token_type(TOK_LBRACE);
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-            Program_tokens[Program_tokens_len-1] = new_token;            
+            add_token_type(TOK_LBRACE);       
             }
             ;    
 
 rbrace      : RBRACE
             {
-            new_token = create_token_type(TOK_RBRACE);
-            Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-            Program_tokens[Program_tokens_len-1] = new_token;            
+             add_token_type(TOK_RBRACE);           
             }
             ;   
 
 tok_semicolon : SEMICOLON
               {
-              new_token = create_token_type(TOK_SEMICOLON);
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-              Program_tokens[Program_tokens_len-1] = new_token;              
+              add_token_type(TOK_SEMICOLON);            
               }
               ;
 
@@ -119,25 +103,19 @@ print     :   print_symp lparen final_expr rparen
 
 If        :   IF
               {
-              new_token = create_token_type(TOK_IF);
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-              Program_tokens[Program_tokens_len-1] = new_token;              
+              add_token_type(TOK_IF);             
               }
               ;
 
 Else          : ELSE
               {
-              new_token = create_token_type(TOK_ELSE);
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-              Program_tokens[Program_tokens_len-1] = new_token;              
+              add_token_type(TOK_ELSE);             
               }
               ;
 
 string    :   STRING
               {
-              new_token = create_token_string(TOK_STRING,$1);
-              Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-              Program_tokens[Program_tokens_len-1] = new_token;              
+              add_token_string(TOK_STRING,$1);              
               }
               ; 
 

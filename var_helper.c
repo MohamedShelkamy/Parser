@@ -10,7 +10,9 @@ extern int v_flag ;
 extern int i_flag ;
 extern int d_flag ;
 
-
+tokclosure_t* Program_tokens = NULL;
+size_t Program_tokens_len = 0;
+tokclosure_t new_token;
 
 struct symtab{                                      
 	char name[20];                                  
@@ -225,35 +227,30 @@ expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
       return expr;
 }
 
-tokclosure_t create_token(token_t tok,char  var_name[100] ,int int_val ,float float_val ,void* expr){
+void add_token_type(token_t tok){
+      tokclosure_t new_token ;
+      new_token.tok=tok;
+      Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      Program_tokens[Program_tokens_len-1] = new_token; 
 
+}
+
+void add_token_string(token_t tok,char var_name[100]){
       tokclosure_t new_token ;
       new_token.tok=tok;
       strcpy(new_token.var_name, var_name);
-      new_token.int_val=int_val;
-      new_token.expr=expr;
+      Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      Program_tokens[Program_tokens_len-1] = new_token; 
 
-      return new_token;
 
 }
 
-tokclosure_t create_token_type(token_t tok){
+void add_token_number(token_t tok ,int int_val){
       tokclosure_t new_token ;
       new_token.tok=tok;
-      return new_token;
-}
-
-tokclosure_t create_token_string(token_t tok,char var_name[100]){
-      tokclosure_t new_token ;
-      new_token.tok=tok;
-      strcpy(new_token.var_name, var_name);
-
-      return new_token;
-}
-
-tokclosure_t create_token_number(token_t tok ,int int_val){
-      tokclosure_t new_token ;
       new_token.int_val=int_val;
+      Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
 
