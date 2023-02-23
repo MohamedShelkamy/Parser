@@ -173,22 +173,19 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     expr->kind = kind;
 
     if(kind == EXPR_UNARY){
-        expr->op_pair[0].operand->expr=left;
+        expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
+        expr->op_pair[0].operand->expr=(void*)left;
         expr->op_pair[0].operation= op; 
       }
     
 
     if (kind == EXPR_BINARY || kind == EXPR_TERNARY) {
-        
-        expr->op_pair[0].operand->expr=left;
+        expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
+        expr->op_pair[0].operand->expr=(void*)left;
         expr->op_pair[0].operation= op;
-        expr->op_pair[1].operand->expr = right;
+        expr->op_pair[1].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
+        expr->op_pair[1].operand->expr = (void*)right;
         expr->op_pair[1].operation = op;
-    }
-
-    if (kind == EXPR_TERNARY) {
-        expr->op_pair[2].operand = NULL;
-        expr->op_pair[2].operation = op;
     }
 
     return expr;

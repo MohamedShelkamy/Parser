@@ -26,7 +26,7 @@ alpha     [A-Za-z]
 "}"             {return RBRACE;}
 "dim"           {return (DIM);}
 "print"         {return (PRINT);}
-";"	           {return (TOK_SEMICOLON);}
+";"	            {return (TOK_SEMICOLON);}
 "<="            { return LE; }
 ">="            { return GE; }
 "<"             { return LT; }
@@ -41,7 +41,7 @@ alpha     [A-Za-z]
 {digit}+        {
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
-			 }
+			    }
 
 \"(\\.|[^\"\\])*\" {
                
@@ -53,7 +53,7 @@ alpha     [A-Za-z]
                               
 
 [a-z][A-Za-z0-9]*   {sscanf(yytext, "%s", yylval.name); return(TOK_IDENT);}
-[\n] 	          {linenumber++;}
+[\n] 	            {linenumber++;}
 
 .              {
                    printf("Unrecognized character: %s\n", yytext);

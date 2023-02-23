@@ -36,12 +36,15 @@ size_t serialized_tokens_len = 0;
 
 %%
 
-builtin:    print
-        ;
+builtin:  print
+          ;
 
-statement:  builtin TOK_SEMICOLON
+final_expr : expr
+            ;
+
+statement:  builtin tok_semicolon
             | 
-            expr TOK_SEMICOLON
+            final_expr tok_semicolon
             ;
 
 code_block: statement
@@ -57,30 +60,44 @@ prog:       code_block
             ;
 
 
+print_symp  : PRINT
+            ;
+
+lparen      : LPAREN
+            ;
+
+rparen      : RPAREN
+            ;
+
+lbracket    : LBRACE
+            ;    
+
+rbracket    : RBRACE
+            ;   
+
+tok_semicolon : TOK_SEMICOLON
+              ;
+
+If            : IF 
+              ;
+
+Else          : ELSE
+              ;
+
+string      : STRING
+            ; 
 
 
-
-
-
-print :    PRINT LPAREN expr RPAREN 
-           {
-           
-           } 
-           |
-           
-           PRINT LPAREN STRING RPAREN
-           {
-            
-           }
+print :    print_symp lparen final_expr rparen 
+           |           
+           print_symp lparen string rparen 
            ;
 
 
-if_stmt : IF LPAREN expr RPAREN LBRACE code_block RBRACE ELSE LBRACE code_block RBRACE
-          {
-
-          };   
-
-
+if_stmt : If lparen final_expr rparen lbracket code_block rbracket Else lbracket code_block rbracket
+          |
+          If lparen final_expr rparen lbracket code_block rbracket
+          ;   
 
 
 expr:
