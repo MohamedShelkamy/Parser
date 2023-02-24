@@ -38,6 +38,7 @@ builtin     : print
 
 final_expr : expr
             {
+            printf("%d",execute_expr($1));
             add_token_expr(TOK_EXPR,$1);
             }
             ;
@@ -145,6 +146,10 @@ expr:
   | expr PLUS expr
   {
     $$=create_expr(EXPR_BINARY,$1,$3,TOK_PLUS);
+  }
+  | expr SUB expr
+  {
+    $$=create_expr(EXPR_BINARY,$1,$3,TOK_MINUS);
   }
   | expr DIV expr
   {

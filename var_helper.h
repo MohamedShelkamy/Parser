@@ -61,6 +61,8 @@ void insert(int value, char name[]);
 
 int getvalue(int i);
 
+int get_variable_value(char name[]);
+
 int is_defined_arr(char name[]);
 
 void insert_arr(int value, char name[]);
@@ -84,6 +86,10 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 expr_t* create_expr_const(exprkind_t kind,token_t op,int value);
 
 expr_t* create_expr_var(exprkind_t kind,token_t op, char var_name[100]);
+
+char* assign(expr_t *expr);
+
+int execute_expr(expr_t *expr);
 
 void free_expr(expr_t* expr);
 

@@ -36,6 +36,8 @@ int getvalue(int i){
   return tab[i].val;
 }
 
+
+// this function is responsible to check if the the variable is defined before or not
 int is_defined(char name[]){
     
     int i;
@@ -51,6 +53,19 @@ int is_defined(char name[]){
 	return flag;
 }
 
+// this function is responsible to return the value of the variable if defined , otherwise it will throw an error
+int get_variable_value(char name[]){  
+    int i = is_defined(name);
+    if (i == -1) {
+      yyerror("Undeclared identifier");
+      exit(1);
+    } else {
+      return getvalue(i);
+    }
+
+}
+
+// this function is responsible to insert a variable
 
 void insert(int value, char name[]){
     int position;
@@ -179,6 +194,7 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     if(kind == EXPR_UNARY){
         expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
         expr->op_pair[0].operand->expr=(void*)left;
+        expr->op_pair[0].operand->tok=TOK_EXPR;
         expr->op_pair[0].operation= op; 
       }
     
@@ -227,6 +243,10 @@ expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
       return expr;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// the coming four methods are responsible to add the program tokens into our serialized tokens vector
+// as this serialized tokens will be executed later by the interpereter.
+
 void add_token_type(token_t tok){
       tokclosure_t new_token ;
       new_token.tok=tok;
@@ -253,6 +273,7 @@ void add_token_number(token_t tok ,int int_val){
       Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
+
 void add_token_expr(token_t tok ,expr_t *expr){
       tokclosure_t new_token ;
       new_token.tok=tok;
@@ -262,6 +283,132 @@ void add_token_expr(token_t tok ,expr_t *expr){
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// this function is responsible to execute any expression recursively
+
+int execute_expr(expr_t *expr){
+    
+    tokclosure_t* operand = expr->op_pair[0].operand;   // first operand
+
+    switch(expr->kind) {
+      
+      case EXPR_UNARY:
+      
+      switch(operand->tok) {
+        
+        case TOK_NUMB:
+        return operand->int_val;
+        break;
+
+        case TOK_VAR:
+        return get_variable_value(operand->var_name);
+        break;
+           
+        case TOK_EXPR:
+        return execute_expr((expr_t*)operand->expr);
+        break;
+
+        default:
+        fprintf(stderr, "unexpected2 type\n");
+        exit(1);
+        return 0;
+      }
+
+      break;
+ 
+      case EXPR_BINARY:
+        tokclosure_t* soperand  = expr->op_pair[1].operand;      // second operand
+         switch (expr->op_pair[0].operation)
+         {
+         case TOK_PLUS:
+          return execute_expr((expr_t*)operand->expr) + execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_MINUS:
+          return execute_expr((expr_t*)operand->expr) - execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_DIV:
+           return execute_expr((expr_t*)operand->expr) / execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_MUL:
+          return execute_expr((expr_t*)operand->expr) * execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_LE:
+          return execute_expr((expr_t*)operand->expr) <= execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_GE:
+          return execute_expr((expr_t*)operand->expr) >= execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_LT:
+          return execute_expr((expr_t*)operand->expr) < execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_GT:
+          return execute_expr((expr_t*)operand->expr) >  execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_EEQ:
+          return execute_expr((expr_t*)operand->expr) == execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_NE:
+          return execute_expr((expr_t*)operand->expr) != execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_AND:
+           return execute_expr((expr_t*)operand->expr) && execute_expr((expr_t*)soperand->expr);
+         break;
+
+         case TOK_OR:
+           return execute_expr((expr_t*)operand->expr) || execute_expr((expr_t*)soperand->expr);
+         break;
+         
+         case TOK_ASSIGNMENT:
+           
+           insert(execute_expr((expr_t*)soperand->expr),assign((expr_t*)operand->expr));
+           return 1;
+           break;
+         default:
+          fprintf(stderr, "unexpected1 type\n");
+          exit(1); 
+          return 0;
+          break;
+         }  
+      
+        break;
+
+    
+      default:
+      fprintf(stderr, "unexpected type\n");
+      exit(1); 
+      return 0;
+
+     }
+  
+}
+
+
+char* assign(expr_t *expr){
+  
+  tokclosure_t* operand = expr->op_pair[0].operand; 
+  if(expr->op_pair[0].operation != TOK_VAR || expr->kind != EXPR_UNARY ){
+    fprintf(stderr, "wrong assigment\n");
+    exit(1); 
+  }
+
+  return operand->var_name;
+  
+}
+
+
+// these two functions are responsible to free the memory
 
 void free_expr(expr_t* expr) {
     if (expr) {
@@ -280,3 +427,4 @@ void free_tokclosure(tokclosure_t* tc) {
     }
     free(tc);
 }
+    
