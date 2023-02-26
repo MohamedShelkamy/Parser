@@ -38,7 +38,6 @@ builtin     : print
 
 final_expr : expr
             {
-            printf("%d",execute_expr($1));
             add_token_expr(TOK_EXPR,$1);
             }
             ;
@@ -46,6 +45,8 @@ final_expr : expr
 statement:  builtin tok_semicolon
             | 
             final_expr tok_semicolon
+            |
+            assigment tok_semicolon
             ;
 
 code_block: statement
@@ -129,6 +130,11 @@ if_stmt : If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_
           ;   
 
 
+assigment : expr EQ expr
+          {
+          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
+          }
+          ;
 expr:
  
  TOK_NUM
@@ -138,10 +144,6 @@ expr:
   | TOK_IDENT
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
-  }
-  | expr EQ expr  
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT);                 
   }
   | expr PLUS expr
   {

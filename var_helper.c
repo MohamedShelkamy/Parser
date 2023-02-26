@@ -12,7 +12,9 @@ extern int d_flag ;
 
 tokclosure_t* Program_tokens = NULL;
 size_t Program_tokens_len = 0;
+size_t current_token =0; 
 tokclosure_t new_token;
+int lrbrace=0;
 
 struct symtab{                                      
 	char name[20];                                  
@@ -22,7 +24,7 @@ struct symtab{
 struct arrtab{                                      
 	char name[20];                                  
 	int  *arr;
-    int size;                                  
+  int  size;                                  
 };
 
 struct symtab tab[200];
@@ -211,6 +213,7 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     return expr;
 }
 
+
 expr_t* create_expr_const(exprkind_t kind,token_t op,int value){
       
       expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
@@ -394,7 +397,6 @@ int execute_expr(expr_t *expr){
   
 }
 
-
 char* assign(expr_t *expr){
   
   tokclosure_t* operand = expr->op_pair[0].operand; 
@@ -406,6 +408,80 @@ char* assign(expr_t *expr){
   return operand->var_name;
   
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void interpereter(){   // this function is responsible to interperete the parsed program , it works in a recursive way
+ if(current_token >= Program_tokens_len) 
+   return;
+ token_t tok=Program_tokens[current_token].tok;
+ switch (tok)          // this switch case is responsible to check for the different tok closure in our serilaized vector 
+ {
+ case TOK_PRINT :     // case print 
+  current_token = current_token+2;   // from the parser structure we know the expected structure so by this it will access the print statement
+  printf("%s\n",Program_tokens[current_token].var_name);
+  current_token++;
+  break;
+ case TOK_IF :     // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
+  current_token = current_token+2;  // we access the expression token to check if it is true or false
+  if(execute_expr((expr_t*)Program_tokens[current_token].expr)){
+    current_token = current_token+2; // if true we continue normally
+  }
+  else {                             // if false we skip the next block 
+    current_token = current_token+2;
+    skip_branch();                  // this one will return back to the else block one token after else token
+  }
+  break;
+ 
+ case TOK_EXPR :
+  execute_expr((expr_t*)Program_tokens[current_token].expr);
+  current_token++;
+  break;
+ 
+ case TOK_ELSE :   // if we reached this token it means we took the if branch so we have to skip this block 
+ current_token++;
+ skip_branch();    
+ break;
+ default:
+  current_token++;
+  break;
+ }
+ interpereter();
+}
+
+
+void skip_branch(){ // this method is responsible to skip either if or else blocks 
+ 
+if(Program_tokens[current_token].tok==TOK_LBRACE){
+  lrbrace++;
+
+ }
+ else{
+  current_token++;
+ }
+
+while (lrbrace != 0 && current_token<= Program_tokens_len)
+ {
+  current_token++;
+  if(Program_tokens[current_token].tok==TOK_LBRACE){
+  lrbrace++; 
+  }
+
+  else if (Program_tokens[current_token].tok==TOK_RBRACE)
+  {
+    lrbrace--;
+  }
+  
+
+}
+current_token++;
+if(Program_tokens[current_token].tok==TOK_ELSE){
+  current_token++;
+  }
+ 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // these two functions are responsible to free the memory
@@ -426,5 +502,4 @@ void free_tokclosure(tokclosure_t* tc) {
         free_expr((expr_t*)tc->expr);
     }
     free(tc);
-}
-    
+}  

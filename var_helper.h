@@ -87,6 +87,12 @@ expr_t* create_expr_const(exprkind_t kind,token_t op,int value);
 
 expr_t* create_expr_var(exprkind_t kind,token_t op, char var_name[100]);
 
+void interpereter();
+
+void take_branch();
+
+void skip_branch();
+
 char* assign(expr_t *expr);
 
 int execute_expr(expr_t *expr);
