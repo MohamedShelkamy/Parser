@@ -8,11 +8,10 @@ int yylex();
 
 %}
 
-%token EQ PLUS DIV MUL SUB LPAREN RPAREN 
+%token EQ LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT SEMICOLON 
-       TOK_NUM STRING TOK_IDENT LE GE LT 
-       GT EEQ NE AND OR LBRACE RBRACE IF ELSE
-
+       TOK_NUM STRING TOK_IDENT LBRACE RBRACE IF ELSE
+       DATA_TYPE OPERATION
 
 %union{
 	char name[100];
@@ -21,13 +20,13 @@ int yylex();
 }
 
 %type<name>    TOK_IDENT
+%type<name>    DATA_TYPE
+%type<name>    OPERATION
 %type<int_val> TOK_NUM
 %type<expr>    expr
 %type<name>    STRING
-%left          PLUS SUB
-%left          MUL  DIV
-%left          EEQ NE LE GE
-%left          LT GT AND OR EQ
+%left          EQ
+%left          OPERATION
 
 %start      prog
 
@@ -127,10 +126,16 @@ string    :   STRING
 if_stmt : If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
           |
           If lparen final_expr rparen lbrace code_block rbrace
+          |
+          If lparen final_expr rparen statement
           ;   
 
 
-assigment : expr EQ expr
+assigment :DATA_TYPE expr EQ expr
+          {
+          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$2,$4,TOK_ASSIGNMENT));  
+          }
+          | expr EQ expr
           {
           add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
           }
@@ -145,53 +150,9 @@ expr:
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
   }
-  | expr PLUS expr
+  | expr OPERATION expr
   {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_PLUS);
-  }
-  | expr SUB expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_MINUS);
-  }
-  | expr DIV expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_DIV);
-  }
-  | expr MUL expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_MUL);
-  }
-  | expr AND expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_AND);
-  }
-  | expr OR expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_OR);
-  }
-  | expr GT expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_GT); 
-  }
-  | expr LT expr
-  {     
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_LT); 
-  }
-  | expr EEQ expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_EEQ); 
-  }
-  | expr NE expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_NE); 
-  }
-  | expr GE expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_GE);
-  }
-  | expr LE expr
-  {
-    $$=create_expr(EXPR_BINARY,$1,$3,TOK_LE); 
+    $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
   }
   | LPAREN expr RPAREN
   {

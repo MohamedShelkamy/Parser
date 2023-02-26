@@ -14,10 +14,14 @@ alpha     [A-Za-z]
 %%
 [ \t\r]+ 
 "="             {return (EQ);}
-"+"             {return (PLUS);}
-"/"             {return (DIV);}
-"*"             {return (MUL);}
-"-"             {return (SUB);}
+"+"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"/"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"*"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"-"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
 "("             {return (LPAREN);}
 ")"             {return (RPAREN);}
 "["             {return (LBRACKET);}
@@ -27,14 +31,22 @@ alpha     [A-Za-z]
 "dim"           {return (DIM);}
 "print"         {return (PRINT);}
 ";"	            {return (SEMICOLON);}
-"<="            { return LE; }
-">="            { return GE; }
-"<"             { return LT; }
-">"             { return GT; }
-"=="            { return EEQ;}
-"!="            { return NE; }
-"&&"            { return AND;}
-"||"            { return OR; }
+"<="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+">="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"<"             {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+">"             {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"=="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"!="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"&&"            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"||"            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
 "if"            { return IF; }
 "else"          { return ELSE;}
 
@@ -42,6 +54,10 @@ alpha     [A-Za-z]
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
 			    }
+(int|float|double|char|void|short|long|unsigned|signed|bool|size_t) {
+ sscanf(yytext, "%s", yylval.name); 
+ return(DATA_TYPE);            
+} 
 
 \"(\\.|[^\"\\])*\" {
                

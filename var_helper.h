@@ -97,6 +97,8 @@ char* assign(expr_t *expr);
 
 int execute_expr(expr_t *expr);
 
+token_t get_operation(char var_name[]);
+
 void free_expr(expr_t* expr);
 
 void free_tokclosure(tokclosure_t* tc);

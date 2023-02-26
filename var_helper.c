@@ -184,6 +184,41 @@ int yyerror(char *s)
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+token_t get_operation(char var_name[]){
+   
+    if (strcmp(var_name, "+") == 0) {
+        return TOK_PLUS;
+    } else if (strcmp(var_name, "/") == 0) {
+        return TOK_DIV;
+    } else if (strcmp(var_name, "*") == 0) {
+        return TOK_MUL;
+    } else if (strcmp(var_name, "-") == 0) {
+        return TOK_MINUS; 
+    } else if (strcmp(var_name, "<=") == 0) {
+        return TOK_LE;
+    } else if (strcmp(var_name, ">=") == 0) {
+        return TOK_GE;
+    } else if (strcmp(var_name, "<") == 0) {
+        return TOK_LT;
+    } else if (strcmp(var_name, ">") == 0) {
+        return TOK_GT;
+    } else if (strcmp(var_name, "==") == 0) {
+        return TOK_EEQ;
+    } else if (strcmp(var_name, "!=") == 0) {
+        return TOK_NE;
+    } else if (strcmp(var_name, "&&") == 0) {
+        return TOK_AND;
+    } else if (strcmp(var_name, "||") == 0) {
+        return TOK_OR;}
+      else{
+        fprintf(stderr, "unexpected operation\n");
+        exit(1);
+      }
+        
+    }
+
 expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     
     expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
@@ -245,6 +280,9 @@ expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
       expr->op_pair[0].operation = op;
       return expr;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // the coming four methods are responsible to add the program tokens into our serialized tokens vector
@@ -411,25 +449,25 @@ char* assign(expr_t *expr){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void interpereter(){   // this function is responsible to interperete the parsed program , it works in a recursive way
+void interpereter(){                      // this function is responsible to interperete the parsed program , it works in a recursive way
  if(current_token >= Program_tokens_len) 
    return;
  token_t tok=Program_tokens[current_token].tok;
- switch (tok)          // this switch case is responsible to check for the different tok closure in our serilaized vector 
+ switch (tok)                             // this switch case is responsible to check for the different tok closure in our serilaized vector 
  {
- case TOK_PRINT :     // case print 
-  current_token = current_token+2;   // from the parser structure we know the expected structure so by this it will access the print statement
+ case TOK_PRINT :                         // case print 
+  current_token = current_token+2;        // from the parser structure we know the expected structure so by this it will access the print statement
   printf("%s\n",Program_tokens[current_token].var_name);
   current_token++;
   break;
- case TOK_IF :     // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
-  current_token = current_token+2;  // we access the expression token to check if it is true or false
+ case TOK_IF :                            // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
+  current_token = current_token+2;        // we access the expression token to check if it is true or false
   if(execute_expr((expr_t*)Program_tokens[current_token].expr)){
-    current_token = current_token+2; // if true we continue normally
+    current_token = current_token+2;      // if true we continue normally
   }
-  else {                             // if false we skip the next block 
+  else {                                  // if false we skip the next block 
     current_token = current_token+2;
-    skip_branch();                  // this one will return back to the else block one token after else token
+    skip_branch();                        // this one will return back to the else block one token after else token
   }
   break;
  
