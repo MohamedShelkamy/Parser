@@ -54,22 +54,26 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    LET = 258,                     /* LET  */
-    EQ = 259,                      /* EQ  */
-    PLUS = 260,                    /* PLUS  */
-    DIV = 261,                     /* DIV  */
-    MUL = 262,                     /* MUL  */
-    SUB = 263,                     /* SUB  */
-    LPAREN = 264,                  /* LPAREN  */
-    RPAREN = 265,                  /* RPAREN  */
-    LBRACKET = 266,                /* LBRACKET  */
-    RBRACKET = 267,                /* RBRACKET  */
-    DIM = 268,                     /* DIM  */
-    PRINT = 269,                   /* PRINT  */
-    TOK_SEMICOLON = 270,           /* TOK_SEMICOLON  */
-    TOK_NUM = 271,                 /* TOK_NUM  */
-    STRING = 272,                  /* STRING  */
-    TOK_IDENT = 273                /* TOK_IDENT  */
+    EQ = 258,                      /* EQ  */
+    LPAREN = 259,                  /* LPAREN  */
+    RPAREN = 260,                  /* RPAREN  */
+    LBRACKET = 261,                /* LBRACKET  */
+    RBRACKET = 262,                /* RBRACKET  */
+    DIM = 263,                     /* DIM  */
+    PRINT = 264,                   /* PRINT  */
+    SEMICOLON = 265,               /* SEMICOLON  */
+    TOK_NUM = 266,                 /* TOK_NUM  */
+    STRING = 267,                  /* STRING  */
+    TOK_IDENT = 268,               /* TOK_IDENT  */
+    LBRACE = 269,                  /* LBRACE  */
+    RBRACE = 270,                  /* RBRACE  */
+    IF = 271,                      /* IF  */
+    ELSE = 272,                    /* ELSE  */
+    DATA_TYPE = 273,               /* DATA_TYPE  */
+    OPERATION = 274,               /* OPERATION  */
+    WHILE = 275,                   /* WHILE  */
+    FOR = 276,                     /* FOR  */
+    COMMA = 277                    /* COMMA  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -78,12 +82,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 14 "shello.y"
+#line 16 "shello.y"
 
 	char name[100];
   int int_val;
+  expr_t* expr;
 
-#line 87 "shello.tab.h"
+#line 92 "shello.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

@@ -1,519 +1,1515 @@
 Terminals unused in grammar
 
-    SUB
+    LBRACKET
+    RBRACKET
+    DIM
 
 
 Grammar
 
     0 $accept: prog $end
 
-    1 prog: prog_lines
+    1 builtin: print
 
-    2 prog_lines: ε
-    3           | prog_line TOK_SEMICOLON prog_lines
+    2 final_expr: expr
 
-    4 prog_line: ε
-    5          | assignment
-    6          | dim
-    7          | print
+    3 statement: builtin tok_semicolon
+    4          | final_expr tok_semicolon
+    5          | assigment
+    6          | tok_semicolon
 
-    8 assignment: LET TOK_IDENT EQ expr
-    9           | LET TOK_IDENT LBRACKET expr RBRACKET EQ expr
+    7 code_block: statement
+    8           | code_block statement
+    9           | LBRACE code_block RBRACE
+   10           | if_stmt
+   11           | code_block if_stmt
+   12           | while_stmt
+   13           | code_block while_stmt
+   14           | for_stmt
+   15           | code_block for_stmt
+   16           | function
+   17           | code_block function
 
-   10 dim: DIM TOK_IDENT LBRACKET expr RBRACKET
+   18 prog: code_block
 
-   11 print: PRINT LPAREN expr RPAREN
-   12      | PRINT LPAREN STRING RPAREN
+   19 print_symp: PRINT
 
-   13 expr: TOK_NUM
-   14     | TOK_IDENT LBRACKET expr RBRACKET
-   15     | TOK_IDENT
-   16     | expr PLUS expr
-   17     | expr DIV expr
-   18     | expr MUL expr
-   19     | LPAREN expr RPAREN
+   20 lparen: LPAREN
+
+   21 rparen: RPAREN
+
+   22 lbrace: LBRACE
+
+   23 rbrace: RBRACE
+
+   24 tok_semicolon: SEMICOLON
+
+   25 print: print_symp lparen final_expr rparen
+   26      | print_symp lparen string rparen
+
+   27 string: STRING
+
+   28 If: IF
+
+   29 Else: ELSE
+
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
+   31        | If lparen final_expr rparen lbrace code_block rbrace
+   32        | If lparen final_expr rparen statement
+
+   33 While: WHILE
+
+   34 while_stmt: While lparen final_expr rparen lbrace code_block rbrace
+
+   35 For: FOR
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
+
+   38 comma: COMMA
+
+   39 parameter_list: ε
+   40               | DATA_TYPE TOK_IDENT
+   41               | parameter_list comma DATA_TYPE TOK_IDENT
+
+   42 function: DATA_TYPE final_expr lparen parameter_list rparen lbrace code_block rbrace
+
+   43 assigment: DATA_TYPE expr EQ expr tok_semicolon
+   44          | expr EQ expr tok_semicolon
+   45          | DATA_TYPE expr tok_semicolon
+
+   46 expr: TOK_NUM
+   47     | TOK_IDENT
+   48     | expr OPERATION expr
+   49     | LPAREN expr RPAREN
 
 
 Terminals, with rules where they appear
 
     $end (0) 0
     error (256)
-    LET (258) 8 9
-    EQ (259) 8 9
-    PLUS (260) 16
-    DIV (261) 17
-    MUL (262) 18
-    SUB (263)
-    LPAREN (264) 11 12 19
-    RPAREN (265) 11 12 19
-    LBRACKET (266) 9 10 14
-    RBRACKET (267) 9 10 14
-    DIM (268) 10
-    PRINT (269) 11 12
-    TOK_SEMICOLON (270) 3
-    TOK_NUM <int_val> (271) 13
-    STRING <name> (272) 12
-    TOK_IDENT <name> (273) 8 9 10 14 15
+    EQ (258) 43 44
+    LPAREN (259) 20 49
+    RPAREN (260) 21 49
+    LBRACKET (261)
+    RBRACKET (262)
+    DIM (263)
+    PRINT (264) 19
+    SEMICOLON (265) 24 36 37
+    TOK_NUM <int_val> (266) 46
+    STRING <name> (267) 27
+    TOK_IDENT <name> (268) 40 41 47
+    LBRACE (269) 9 22
+    RBRACE (270) 9 23
+    IF (271) 28
+    ELSE (272) 29
+    DATA_TYPE <name> (273) 40 41 42 43 45
+    OPERATION <name> (274) 48
+    WHILE (275) 33
+    FOR (276) 35
+    COMMA (277) 38
 
 
 Nonterminals, with rules where they appear
 
-    $accept (19)
+    $accept (23)
         on left: 0
-    prog (20)
+    builtin (24)
         on left: 1
-        on right: 0
-    prog_lines (21)
-        on left: 2 3
-        on right: 1 3
-    prog_line (22)
-        on left: 4 5 6 7
         on right: 3
-    assignment (23)
-        on left: 8 9
-        on right: 5
-    dim (24)
-        on left: 10
-        on right: 6
-    print (25)
-        on left: 11 12
-        on right: 7
-    expr <int_val> (26)
-        on left: 13 14 15 16 17 18 19
-        on right: 8 9 10 11 14 16 17 18 19
+    final_expr (25)
+        on left: 2
+        on right: 4 25 30 31 32 34 36 37 42
+    statement (26)
+        on left: 3 4 5 6
+        on right: 7 8 32
+    code_block (27)
+        on left: 7 8 9 10 11 12 13 14 15 16 17
+        on right: 8 9 11 13 15 17 18 30 31 34 36 42
+    prog (28)
+        on left: 18
+        on right: 0
+    print_symp (29)
+        on left: 19
+        on right: 25 26
+    lparen (30)
+        on left: 20
+        on right: 25 26 30 31 32 34 36 37 42
+    rparen (31)
+        on left: 21
+        on right: 25 26 30 31 32 34 36 37 42
+    lbrace (32)
+        on left: 22
+        on right: 30 31 34 36 37 42
+    rbrace (33)
+        on left: 23
+        on right: 30 31 34 36 37 42
+    tok_semicolon (34)
+        on left: 24
+        on right: 3 4 6 43 44 45
+    print (35)
+        on left: 25 26
+        on right: 1
+    string (36)
+        on left: 27
+        on right: 26
+    If (37)
+        on left: 28
+        on right: 30 31 32
+    Else (38)
+        on left: 29
+        on right: 30
+    if_stmt (39)
+        on left: 30 31 32
+        on right: 10 11
+    While (40)
+        on left: 33
+        on right: 34
+    while_stmt (41)
+        on left: 34
+        on right: 12 13
+    For (42)
+        on left: 35
+        on right: 36 37
+    for_stmt (43)
+        on left: 36 37
+        on right: 14 15
+    comma (44)
+        on left: 38
+        on right: 41
+    parameter_list (45)
+        on left: 39 40 41
+        on right: 41 42
+    function (46)
+        on left: 42
+        on right: 16 17
+    assigment (47)
+        on left: 43 44 45
+        on right: 5 36 37
+    expr <expr> (48)
+        on left: 46 47 48 49
+        on right: 2 43 44 45 48 49
 
 
 State 0
 
     0 $accept: • prog $end
 
-    LET    shift, and go to state 1
-    DIM    shift, and go to state 2
-    PRINT  shift, and go to state 3
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
 
-    TOK_SEMICOLON  reduce using rule 4 (prog_line)
-    $default       reduce using rule 2 (prog_lines)
-
-    prog        go to state 4
-    prog_lines  go to state 5
-    prog_line   go to state 6
-    assignment  go to state 7
-    dim         go to state 8
-    print       go to state 9
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 14
+    prog           go to state 15
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
 
 
 State 1
 
-    8 assignment: LET • TOK_IDENT EQ expr
-    9           | LET • TOK_IDENT LBRACKET expr RBRACKET EQ expr
+   49 expr: LPAREN • expr RPAREN
 
-    TOK_IDENT  shift, and go to state 10
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    expr  go to state 28
 
 
 State 2
 
-   10 dim: DIM • TOK_IDENT LBRACKET expr RBRACKET
+   19 print_symp: PRINT •
 
-    TOK_IDENT  shift, and go to state 11
+    $default  reduce using rule 19 (print_symp)
 
 
 State 3
 
-   11 print: PRINT • LPAREN expr RPAREN
-   12      | PRINT • LPAREN STRING RPAREN
+   24 tok_semicolon: SEMICOLON •
 
-    LPAREN  shift, and go to state 12
+    $default  reduce using rule 24 (tok_semicolon)
 
 
 State 4
 
-    0 $accept: prog • $end
+   46 expr: TOK_NUM •
 
-    $end  shift, and go to state 13
+    $default  reduce using rule 46 (expr)
 
 
 State 5
 
-    1 prog: prog_lines •
+   47 expr: TOK_IDENT •
 
-    $default  reduce using rule 1 (prog)
+    $default  reduce using rule 47 (expr)
 
 
 State 6
 
-    3 prog_lines: prog_line • TOK_SEMICOLON prog_lines
+    9 code_block: LBRACE • code_block RBRACE
 
-    TOK_SEMICOLON  shift, and go to state 14
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 29
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
 
 
 State 7
 
-    5 prog_line: assignment •
+   28 If: IF •
 
-    $default  reduce using rule 5 (prog_line)
+    $default  reduce using rule 28 (If)
 
 
 State 8
 
-    6 prog_line: dim •
+   42 function: DATA_TYPE • final_expr lparen parameter_list rparen lbrace code_block rbrace
+   43 assigment: DATA_TYPE • expr EQ expr tok_semicolon
+   45          | DATA_TYPE • expr tok_semicolon
 
-    $default  reduce using rule 6 (prog_line)
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    final_expr  go to state 30
+    expr        go to state 31
 
 
 State 9
 
-    7 prog_line: print •
+   33 While: WHILE •
 
-    $default  reduce using rule 7 (prog_line)
+    $default  reduce using rule 33 (While)
 
 
 State 10
 
-    8 assignment: LET TOK_IDENT • EQ expr
-    9           | LET TOK_IDENT • LBRACKET expr RBRACKET EQ expr
+   35 For: FOR •
 
-    EQ        shift, and go to state 15
-    LBRACKET  shift, and go to state 16
+    $default  reduce using rule 35 (For)
 
 
 State 11
 
-   10 dim: DIM TOK_IDENT • LBRACKET expr RBRACKET
+    3 statement: builtin • tok_semicolon
 
-    LBRACKET  shift, and go to state 17
+    SEMICOLON  shift, and go to state 3
+
+    tok_semicolon  go to state 32
 
 
 State 12
 
-   11 print: PRINT LPAREN • expr RPAREN
-   12      | PRINT LPAREN • STRING RPAREN
+    4 statement: final_expr • tok_semicolon
 
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    STRING     shift, and go to state 20
-    TOK_IDENT  shift, and go to state 21
+    SEMICOLON  shift, and go to state 3
 
-    expr  go to state 22
+    tok_semicolon  go to state 33
 
 
 State 13
+
+    7 code_block: statement •
+
+    $default  reduce using rule 7 (code_block)
+
+
+State 14
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   18 prog: code_block •
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    $default  reduce using rule 18 (prog)
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 15
+
+    0 $accept: prog • $end
+
+    $end  shift, and go to state 39
+
+
+State 16
+
+   25 print: print_symp • lparen final_expr rparen
+   26      | print_symp • lparen string rparen
+
+    LPAREN  shift, and go to state 40
+
+    lparen  go to state 41
+
+
+State 17
+
+    6 statement: tok_semicolon •
+
+    $default  reduce using rule 6 (statement)
+
+
+State 18
+
+    1 builtin: print •
+
+    $default  reduce using rule 1 (builtin)
+
+
+State 19
+
+   30 if_stmt: If • lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
+   31        | If • lparen final_expr rparen lbrace code_block rbrace
+   32        | If • lparen final_expr rparen statement
+
+    LPAREN  shift, and go to state 40
+
+    lparen  go to state 42
+
+
+State 20
+
+   10 code_block: if_stmt •
+
+    $default  reduce using rule 10 (code_block)
+
+
+State 21
+
+   34 while_stmt: While • lparen final_expr rparen lbrace code_block rbrace
+
+    LPAREN  shift, and go to state 40
+
+    lparen  go to state 43
+
+
+State 22
+
+   12 code_block: while_stmt •
+
+    $default  reduce using rule 12 (code_block)
+
+
+State 23
+
+   36 for_stmt: For • lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For • lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
+
+    LPAREN  shift, and go to state 40
+
+    lparen  go to state 44
+
+
+State 24
+
+   14 code_block: for_stmt •
+
+    $default  reduce using rule 14 (code_block)
+
+
+State 25
+
+   16 code_block: function •
+
+    $default  reduce using rule 16 (code_block)
+
+
+State 26
+
+    5 statement: assigment •
+
+    $default  reduce using rule 5 (statement)
+
+
+State 27
+
+    2 final_expr: expr •
+   44 assigment: expr • EQ expr tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    EQ         shift, and go to state 45
+    OPERATION  shift, and go to state 46
+
+    $default  reduce using rule 2 (final_expr)
+
+
+State 28
+
+   48 expr: expr • OPERATION expr
+   49     | LPAREN expr • RPAREN
+
+    RPAREN     shift, and go to state 47
+    OPERATION  shift, and go to state 46
+
+
+State 29
+
+    8 code_block: code_block • statement
+    9           | LBRACE code_block • RBRACE
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 48
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 30
+
+   42 function: DATA_TYPE final_expr • lparen parameter_list rparen lbrace code_block rbrace
+
+    LPAREN  shift, and go to state 40
+
+    lparen  go to state 49
+
+
+State 31
+
+    2 final_expr: expr •
+   43 assigment: DATA_TYPE expr • EQ expr tok_semicolon
+   45          | DATA_TYPE expr • tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    EQ         shift, and go to state 50
+    SEMICOLON  shift, and go to state 3
+    OPERATION  shift, and go to state 46
+
+    $default  reduce using rule 2 (final_expr)
+
+    tok_semicolon  go to state 51
+
+
+State 32
+
+    3 statement: builtin tok_semicolon •
+
+    $default  reduce using rule 3 (statement)
+
+
+State 33
+
+    4 statement: final_expr tok_semicolon •
+
+    $default  reduce using rule 4 (statement)
+
+
+State 34
+
+    8 code_block: code_block statement •
+
+    $default  reduce using rule 8 (code_block)
+
+
+State 35
+
+   11 code_block: code_block if_stmt •
+
+    $default  reduce using rule 11 (code_block)
+
+
+State 36
+
+   13 code_block: code_block while_stmt •
+
+    $default  reduce using rule 13 (code_block)
+
+
+State 37
+
+   15 code_block: code_block for_stmt •
+
+    $default  reduce using rule 15 (code_block)
+
+
+State 38
+
+   17 code_block: code_block function •
+
+    $default  reduce using rule 17 (code_block)
+
+
+State 39
 
     0 $accept: prog $end •
 
     $default  accept
 
 
-State 14
-
-    3 prog_lines: prog_line TOK_SEMICOLON • prog_lines
-
-    LET    shift, and go to state 1
-    DIM    shift, and go to state 2
-    PRINT  shift, and go to state 3
-
-    TOK_SEMICOLON  reduce using rule 4 (prog_line)
-    $default       reduce using rule 2 (prog_lines)
-
-    prog_lines  go to state 23
-    prog_line   go to state 6
-    assignment  go to state 7
-    dim         go to state 8
-    print       go to state 9
-
-
-State 15
-
-    8 assignment: LET TOK_IDENT EQ • expr
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 24
-
-
-State 16
-
-    9 assignment: LET TOK_IDENT LBRACKET • expr RBRACKET EQ expr
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 25
-
-
-State 17
-
-   10 dim: DIM TOK_IDENT LBRACKET • expr RBRACKET
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 26
-
-
-State 18
-
-   19 expr: LPAREN • expr RPAREN
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 27
-
-
-State 19
-
-   13 expr: TOK_NUM •
-
-    $default  reduce using rule 13 (expr)
-
-
-State 20
-
-   12 print: PRINT LPAREN STRING • RPAREN
-
-    RPAREN  shift, and go to state 28
-
-
-State 21
-
-   14 expr: TOK_IDENT • LBRACKET expr RBRACKET
-   15     | TOK_IDENT •
-
-    LBRACKET  shift, and go to state 29
-
-    $default  reduce using rule 15 (expr)
-
-
-State 22
-
-   11 print: PRINT LPAREN expr • RPAREN
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    PLUS    shift, and go to state 30
-    DIV     shift, and go to state 31
-    MUL     shift, and go to state 32
-    RPAREN  shift, and go to state 33
-
-
-State 23
-
-    3 prog_lines: prog_line TOK_SEMICOLON prog_lines •
-
-    $default  reduce using rule 3 (prog_lines)
-
-
-State 24
-
-    8 assignment: LET TOK_IDENT EQ expr •
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    PLUS  shift, and go to state 30
-    DIV   shift, and go to state 31
-    MUL   shift, and go to state 32
-
-    $default  reduce using rule 8 (assignment)
-
-
-State 25
-
-    9 assignment: LET TOK_IDENT LBRACKET expr • RBRACKET EQ expr
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    PLUS      shift, and go to state 30
-    DIV       shift, and go to state 31
-    MUL       shift, and go to state 32
-    RBRACKET  shift, and go to state 34
-
-
-State 26
-
-   10 dim: DIM TOK_IDENT LBRACKET expr • RBRACKET
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    PLUS      shift, and go to state 30
-    DIV       shift, and go to state 31
-    MUL       shift, and go to state 32
-    RBRACKET  shift, and go to state 35
-
-
-State 27
-
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-   19     | LPAREN expr • RPAREN
-
-    PLUS    shift, and go to state 30
-    DIV     shift, and go to state 31
-    MUL     shift, and go to state 32
-    RPAREN  shift, and go to state 36
-
-
-State 28
-
-   12 print: PRINT LPAREN STRING RPAREN •
-
-    $default  reduce using rule 12 (print)
-
-
-State 29
-
-   14 expr: TOK_IDENT LBRACKET • expr RBRACKET
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 37
-
-
-State 30
-
-   16 expr: expr PLUS • expr
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 38
-
-
-State 31
-
-   17 expr: expr DIV • expr
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 39
-
-
-State 32
-
-   18 expr: expr MUL • expr
-
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
-
-    expr  go to state 40
-
-
-State 33
-
-   11 print: PRINT LPAREN expr RPAREN •
-
-    $default  reduce using rule 11 (print)
-
-
-State 34
-
-    9 assignment: LET TOK_IDENT LBRACKET expr RBRACKET • EQ expr
-
-    EQ  shift, and go to state 41
-
-
-State 35
-
-   10 dim: DIM TOK_IDENT LBRACKET expr RBRACKET •
-
-    $default  reduce using rule 10 (dim)
-
-
-State 36
-
-   19 expr: LPAREN expr RPAREN •
-
-    $default  reduce using rule 19 (expr)
-
-
-State 37
-
-   14 expr: TOK_IDENT LBRACKET expr • RBRACKET
-   16     | expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    PLUS      shift, and go to state 30
-    DIV       shift, and go to state 31
-    MUL       shift, and go to state 32
-    RBRACKET  shift, and go to state 42
-
-
-State 38
-
-   16 expr: expr • PLUS expr
-   16     | expr PLUS expr •
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-
-    DIV  shift, and go to state 31
-    MUL  shift, and go to state 32
-
-    $default  reduce using rule 16 (expr)
-
-
-State 39
-
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   17     | expr DIV expr •
-   18     | expr • MUL expr
-
-    $default  reduce using rule 17 (expr)
-
-
 State 40
 
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
-   18     | expr MUL expr •
+   20 lparen: LPAREN •
 
-    $default  reduce using rule 18 (expr)
+    $default  reduce using rule 20 (lparen)
 
 
 State 41
 
-    9 assignment: LET TOK_IDENT LBRACKET expr RBRACKET EQ • expr
+   25 print: print_symp lparen • final_expr rparen
+   26      | print_symp lparen • string rparen
 
-    LPAREN     shift, and go to state 18
-    TOK_NUM    shift, and go to state 19
-    TOK_IDENT  shift, and go to state 21
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    STRING     shift, and go to state 52
+    TOK_IDENT  shift, and go to state 5
 
-    expr  go to state 43
+    final_expr  go to state 53
+    string      go to state 54
+    expr        go to state 55
 
 
 State 42
 
-   14 expr: TOK_IDENT LBRACKET expr RBRACKET •
+   30 if_stmt: If lparen • final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
+   31        | If lparen • final_expr rparen lbrace code_block rbrace
+   32        | If lparen • final_expr rparen statement
 
-    $default  reduce using rule 14 (expr)
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    final_expr  go to state 56
+    expr        go to state 55
 
 
 State 43
 
-    9 assignment: LET TOK_IDENT LBRACKET expr RBRACKET EQ expr •
-   16 expr: expr • PLUS expr
-   17     | expr • DIV expr
-   18     | expr • MUL expr
+   34 while_stmt: While lparen • final_expr rparen lbrace code_block rbrace
 
-    PLUS  shift, and go to state 30
-    DIV   shift, and go to state 31
-    MUL   shift, and go to state 32
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
 
-    $default  reduce using rule 9 (assignment)
+    final_expr  go to state 57
+    expr        go to state 55
+
+
+State 44
+
+   36 for_stmt: For lparen • assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For lparen • assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    DATA_TYPE  shift, and go to state 58
+
+    assigment  go to state 59
+    expr       go to state 60
+
+
+State 45
+
+   44 assigment: expr EQ • expr tok_semicolon
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    expr  go to state 61
+
+
+State 46
+
+   48 expr: expr OPERATION • expr
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    expr  go to state 62
+
+
+State 47
+
+   49 expr: LPAREN expr RPAREN •
+
+    $default  reduce using rule 49 (expr)
+
+
+State 48
+
+    9 code_block: LBRACE code_block RBRACE •
+
+    $default  reduce using rule 9 (code_block)
+
+
+State 49
+
+   42 function: DATA_TYPE final_expr lparen • parameter_list rparen lbrace code_block rbrace
+
+    DATA_TYPE  shift, and go to state 63
+
+    $default  reduce using rule 39 (parameter_list)
+
+    parameter_list  go to state 64
+
+
+State 50
+
+   43 assigment: DATA_TYPE expr EQ • expr tok_semicolon
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    expr  go to state 65
+
+
+State 51
+
+   45 assigment: DATA_TYPE expr tok_semicolon •
+
+    $default  reduce using rule 45 (assigment)
+
+
+State 52
+
+   27 string: STRING •
+
+    $default  reduce using rule 27 (string)
+
+
+State 53
+
+   25 print: print_symp lparen final_expr • rparen
+
+    RPAREN  shift, and go to state 66
+
+    rparen  go to state 67
+
+
+State 54
+
+   26 print: print_symp lparen string • rparen
+
+    RPAREN  shift, and go to state 66
+
+    rparen  go to state 68
+
+
+State 55
+
+    2 final_expr: expr •
+   48 expr: expr • OPERATION expr
+
+    OPERATION  shift, and go to state 46
+
+    $default  reduce using rule 2 (final_expr)
+
+
+State 56
+
+   30 if_stmt: If lparen final_expr • rparen lbrace code_block rbrace Else lbrace code_block rbrace
+   31        | If lparen final_expr • rparen lbrace code_block rbrace
+   32        | If lparen final_expr • rparen statement
+
+    RPAREN  shift, and go to state 66
+
+    rparen  go to state 69
+
+
+State 57
+
+   34 while_stmt: While lparen final_expr • rparen lbrace code_block rbrace
+
+    RPAREN  shift, and go to state 66
+
+    rparen  go to state 70
+
+
+State 58
+
+   43 assigment: DATA_TYPE • expr EQ expr tok_semicolon
+   45          | DATA_TYPE • expr tok_semicolon
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    expr  go to state 71
+
+
+State 59
+
+   36 for_stmt: For lparen assigment • SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For lparen assigment • SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
+
+    SEMICOLON  shift, and go to state 72
+
+
+State 60
+
+   44 assigment: expr • EQ expr tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    EQ         shift, and go to state 45
+    OPERATION  shift, and go to state 46
+
+
+State 61
+
+   44 assigment: expr EQ expr • tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    SEMICOLON  shift, and go to state 3
+    OPERATION  shift, and go to state 46
+
+    tok_semicolon  go to state 73
+
+
+State 62
+
+   48 expr: expr • OPERATION expr
+   48     | expr OPERATION expr •
+
+    $default  reduce using rule 48 (expr)
+
+
+State 63
+
+   40 parameter_list: DATA_TYPE • TOK_IDENT
+
+    TOK_IDENT  shift, and go to state 74
+
+
+State 64
+
+   41 parameter_list: parameter_list • comma DATA_TYPE TOK_IDENT
+   42 function: DATA_TYPE final_expr lparen parameter_list • rparen lbrace code_block rbrace
+
+    RPAREN  shift, and go to state 66
+    COMMA   shift, and go to state 75
+
+    rparen  go to state 76
+    comma   go to state 77
+
+
+State 65
+
+   43 assigment: DATA_TYPE expr EQ expr • tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    SEMICOLON  shift, and go to state 3
+    OPERATION  shift, and go to state 46
+
+    tok_semicolon  go to state 78
+
+
+State 66
+
+   21 rparen: RPAREN •
+
+    $default  reduce using rule 21 (rparen)
+
+
+State 67
+
+   25 print: print_symp lparen final_expr rparen •
+
+    $default  reduce using rule 25 (print)
+
+
+State 68
+
+   26 print: print_symp lparen string rparen •
+
+    $default  reduce using rule 26 (print)
+
+
+State 69
+
+   30 if_stmt: If lparen final_expr rparen • lbrace code_block rbrace Else lbrace code_block rbrace
+   31        | If lparen final_expr rparen • lbrace code_block rbrace
+   32        | If lparen final_expr rparen • statement
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 79
+    DATA_TYPE  shift, and go to state 58
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 80
+    print_symp     go to state 16
+    lbrace         go to state 81
+    tok_semicolon  go to state 17
+    print          go to state 18
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 70
+
+   34 while_stmt: While lparen final_expr rparen • lbrace code_block rbrace
+
+    LBRACE  shift, and go to state 79
+
+    lbrace  go to state 82
+
+
+State 71
+
+   43 assigment: DATA_TYPE expr • EQ expr tok_semicolon
+   45          | DATA_TYPE expr • tok_semicolon
+   48 expr: expr • OPERATION expr
+
+    EQ         shift, and go to state 50
+    SEMICOLON  shift, and go to state 3
+    OPERATION  shift, and go to state 46
+
+    tok_semicolon  go to state 51
+
+
+State 72
+
+   36 for_stmt: For lparen assigment SEMICOLON • final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON • final_expr SEMICOLON assigment rparen lbrace rbrace
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+
+    final_expr  go to state 83
+    expr        go to state 55
+
+
+State 73
+
+   44 assigment: expr EQ expr tok_semicolon •
+
+    $default  reduce using rule 44 (assigment)
+
+
+State 74
+
+   40 parameter_list: DATA_TYPE TOK_IDENT •
+
+    $default  reduce using rule 40 (parameter_list)
+
+
+State 75
+
+   38 comma: COMMA •
+
+    $default  reduce using rule 38 (comma)
+
+
+State 76
+
+   42 function: DATA_TYPE final_expr lparen parameter_list rparen • lbrace code_block rbrace
+
+    LBRACE  shift, and go to state 79
+
+    lbrace  go to state 84
+
+
+State 77
+
+   41 parameter_list: parameter_list comma • DATA_TYPE TOK_IDENT
+
+    DATA_TYPE  shift, and go to state 85
+
+
+State 78
+
+   43 assigment: DATA_TYPE expr EQ expr tok_semicolon •
+
+    $default  reduce using rule 43 (assigment)
+
+
+State 79
+
+   22 lbrace: LBRACE •
+
+    $default  reduce using rule 22 (lbrace)
+
+
+State 80
+
+   32 if_stmt: If lparen final_expr rparen statement •
+
+    $default  reduce using rule 32 (if_stmt)
+
+
+State 81
+
+   30 if_stmt: If lparen final_expr rparen lbrace • code_block rbrace Else lbrace code_block rbrace
+   31        | If lparen final_expr rparen lbrace • code_block rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 86
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 82
+
+   34 while_stmt: While lparen final_expr rparen lbrace • code_block rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 87
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 83
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr • SEMICOLON assigment rparen lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr • SEMICOLON assigment rparen lbrace rbrace
+
+    SEMICOLON  shift, and go to state 88
+
+
+State 84
+
+   42 function: DATA_TYPE final_expr lparen parameter_list rparen lbrace • code_block rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 89
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 85
+
+   41 parameter_list: parameter_list comma DATA_TYPE • TOK_IDENT
+
+    TOK_IDENT  shift, and go to state 90
+
+
+State 86
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   30 if_stmt: If lparen final_expr rparen lbrace code_block • rbrace Else lbrace code_block rbrace
+   31        | If lparen final_expr rparen lbrace code_block • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    rbrace         go to state 92
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 87
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   34 while_stmt: While lparen final_expr rparen lbrace code_block • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    rbrace         go to state 93
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 88
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON • assigment rparen lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr SEMICOLON • assigment rparen lbrace rbrace
+
+    LPAREN     shift, and go to state 1
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    DATA_TYPE  shift, and go to state 58
+
+    assigment  go to state 94
+    expr       go to state 60
+
+
+State 89
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   42 function: DATA_TYPE final_expr lparen parameter_list rparen lbrace code_block • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    rbrace         go to state 95
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 90
+
+   41 parameter_list: parameter_list comma DATA_TYPE TOK_IDENT •
+
+    $default  reduce using rule 41 (parameter_list)
+
+
+State 91
+
+   23 rbrace: RBRACE •
+
+    $default  reduce using rule 23 (rbrace)
+
+
+State 92
+
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace • Else lbrace code_block rbrace
+   31        | If lparen final_expr rparen lbrace code_block rbrace •
+
+    ELSE  shift, and go to state 96
+
+    $default  reduce using rule 31 (if_stmt)
+
+    Else  go to state 97
+
+
+State 93
+
+   34 while_stmt: While lparen final_expr rparen lbrace code_block rbrace •
+
+    $default  reduce using rule 34 (while_stmt)
+
+
+State 94
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment • rparen lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr SEMICOLON assigment • rparen lbrace rbrace
+
+    RPAREN  shift, and go to state 66
+
+    rparen  go to state 98
+
+
+State 95
+
+   42 function: DATA_TYPE final_expr lparen parameter_list rparen lbrace code_block rbrace •
+
+    $default  reduce using rule 42 (function)
+
+
+State 96
+
+   29 Else: ELSE •
+
+    $default  reduce using rule 29 (Else)
+
+
+State 97
+
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace Else • lbrace code_block rbrace
+
+    LBRACE  shift, and go to state 79
+
+    lbrace  go to state 99
+
+
+State 98
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen • lbrace code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen • lbrace rbrace
+
+    LBRACE  shift, and go to state 79
+
+    lbrace  go to state 100
+
+
+State 99
+
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace Else lbrace • code_block rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 101
+    print_symp     go to state 16
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 100
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace • code_block rbrace
+   37         | For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    LBRACE     shift, and go to state 6
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 13
+    code_block     go to state 102
+    print_symp     go to state 16
+    rbrace         go to state 103
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 20
+    While          go to state 21
+    while_stmt     go to state 22
+    For            go to state 23
+    for_stmt       go to state 24
+    function       go to state 25
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 101
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    rbrace         go to state 104
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 102
+
+    8 code_block: code_block • statement
+   11           | code_block • if_stmt
+   13           | code_block • while_stmt
+   15           | code_block • for_stmt
+   17           | code_block • function
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block • rbrace
+
+    LPAREN     shift, and go to state 1
+    PRINT      shift, and go to state 2
+    SEMICOLON  shift, and go to state 3
+    TOK_NUM    shift, and go to state 4
+    TOK_IDENT  shift, and go to state 5
+    RBRACE     shift, and go to state 91
+    IF         shift, and go to state 7
+    DATA_TYPE  shift, and go to state 8
+    WHILE      shift, and go to state 9
+    FOR        shift, and go to state 10
+
+    builtin        go to state 11
+    final_expr     go to state 12
+    statement      go to state 34
+    print_symp     go to state 16
+    rbrace         go to state 105
+    tok_semicolon  go to state 17
+    print          go to state 18
+    If             go to state 19
+    if_stmt        go to state 35
+    While          go to state 21
+    while_stmt     go to state 36
+    For            go to state 23
+    for_stmt       go to state 37
+    function       go to state 38
+    assigment      go to state 26
+    expr           go to state 27
+
+
+State 103
+
+   37 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace •
+
+    $default  reduce using rule 37 (for_stmt)
+
+
+State 104
+
+   30 if_stmt: If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace •
+
+    $default  reduce using rule 30 (if_stmt)
+
+
+State 105
+
+   36 for_stmt: For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace •
+
+    $default  reduce using rule 36 (for_stmt)
