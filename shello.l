@@ -49,12 +49,15 @@ alpha     [A-Za-z]
                   return(OPERATION);}
 "if"            { return IF; }
 "else"          { return ELSE;}
+"while"         { return WHILE;}
+"for"           { return FOR;}
+","             {return COMMA;}
 
 {digit}+        {
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
 			    }
-(int|float|double|char|void|short|long|unsigned|signed|bool|size_t) {
+(int|float|double|char|void|short|long|unsigned|signed|bool|size_t|void) {
  sscanf(yytext, "%s", yylval.name); 
  return(DATA_TYPE);            
 } 

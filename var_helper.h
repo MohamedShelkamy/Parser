@@ -2,6 +2,8 @@
 #define SYMTAB_H
 
 typedef enum {
+	TOK_WHILE,
+	TOK_FOR,
 	TOK_IF,
 	TOK_ELSE,
 	TOK_STRING,
@@ -28,6 +30,7 @@ typedef enum {
 	TOK_NE, 
 	TOK_AND, 
 	TOK_OR, 
+	TOK_COMMA,
 } token_t;
 
 typedef struct {

@@ -15,7 +15,8 @@ size_t Program_tokens_len = 0;
 size_t current_token =0; 
 tokclosure_t new_token;
 int lrbrace=0;
-
+int sloop_token;
+int eloop_token;
 struct symtab{                                      
 	char name[20];                                  
 	int val;                                  
@@ -480,6 +481,7 @@ void interpereter(){                      // this function is responsible to int
  current_token++;
  skip_branch();    
  break;
+ 
  default:
   current_token++;
   break;

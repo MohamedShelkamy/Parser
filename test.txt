@@ -1,15 +1,20 @@
-x=4;
-if(x==4){
-print("hell");
+int x=6;
+x=x+10;
 
-if(x==4){
-print("internal if condition");}
-
-else{
-  print("internal else");  
+if(x==15){
+print("external if");
+if(x>10){
+  print("internal if");
+  if(x>10)
+  print("internal internal if");
+}
+else {
+   print("internal else");
 }
 }
 
 else{
-  print("external else");  
+  print("external else"); 
+  if(x==16)
+  print("if without curely brackets"); 
 }
