@@ -480,14 +480,11 @@ void interpereter(){                      // this function is responsible to int
   break;
  case TOK_IF :                            // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
   current_token = current_token+2;        // we access the expression token to check if it is true or false
-  if(execute_expr((expr_t*)Program_tokens[current_token].expr)){
-    current_token = current_token+2;      // if true we continue normally
+  if(!execute_expr((expr_t*)Program_tokens[current_token].expr)){  // if false we will skip the true block
+    current_token = current_token+2;                               // by adding 2 we jump to execution block so we 
+    skip_branch();                                                 // will skip ")"
   }
-  else {                                  // if false we skip the next block 
-    current_token = current_token+2;      // by this our token will point to the correct block
-    skip_branch();                        // this one will return back to the else block "one token after else token"
-  }
-  break;
+  break;                                  // if true we continue normally
  
  case TOK_EXPR :
   execute_expr((expr_t*)Program_tokens[current_token].expr);
