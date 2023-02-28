@@ -299,6 +299,10 @@ void add_token_type(token_t tok){
       tokclosure_t new_token ;
       new_token.tok=tok;
       Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      if(!Program_tokens){
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      }
       Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
@@ -308,6 +312,10 @@ void add_token_string(token_t tok,char var_name[100]){
       new_token.tok=tok;
       strcpy(new_token.var_name, var_name);
       Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      if(!Program_tokens){
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      }
       Program_tokens[Program_tokens_len-1] = new_token; 
 }
 
@@ -316,6 +324,10 @@ void add_token_number(token_t tok ,int int_val){
       new_token.tok=tok;
       new_token.int_val=int_val;
       Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      if(!Program_tokens){
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      }
       Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
@@ -325,6 +337,10 @@ void add_token_expr(token_t tok ,expr_t *expr){
       new_token.tok=tok;
       new_token.expr=(void*)expr;
       Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
+      if(!Program_tokens){
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+      }
       Program_tokens[Program_tokens_len-1] = new_token; 
 
 }
