@@ -1,7 +1,9 @@
 %{
 #include <stdio.h>
-#include "shello.tab.h"
 #include "var_helper.h"
+#include "main.h"
+#include "shello.tab.h"
+
 int linenumber = 1;
 %}
 
@@ -11,12 +13,15 @@ alpha     [A-Za-z]
 
 %%
 [ \t\r]+ 
-"let"           {return (LET);}
 "="             {return (EQ);}
-"+"             {return (PLUS);}
-"/"             {return (DIV);}
-"*"             {return (MUL);}
-"-"             {return (SUB);}
+"+"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"/"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"*"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"-"             { sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
 "("             {return (LPAREN);}
 ")"             {return (RPAREN);}
 "["             {return (LBRACKET);}
@@ -25,22 +30,37 @@ alpha     [A-Za-z]
 "}"             {return RBRACE;}
 "dim"           {return (DIM);}
 "print"         {return (PRINT);}
-";"	           {return (TOK_SEMICOLON);}
-"<="            { return LE; }
-">="            { return GE; }
-"<"             { return LT; }
-">"             { return GT; }
-"=="            { return EEQ;}
-"!="            { return NE; }
-"&&"            { return AND;}
-"||"            { return OR; }
+";"	            {return (SEMICOLON);}
+"<="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+">="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"<"             {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+">"             {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"=="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"!="            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"&&"            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
+"||"            {sscanf(yytext, "%s", yylval.name); 
+                  return(OPERATION);}
 "if"            { return IF; }
 "else"          { return ELSE;}
+"while"         { return WHILE;}
+"for"           { return FOR;}
+","             {return COMMA;}
 
 {digit}+        {
 				    yylval.int_val = atoi(yytext); 
 				    return TOK_NUM; 
-			 }
+			    }
+(int|float|double|char|void|short|long|unsigned|signed|bool|size_t|void) {
+ sscanf(yytext, "%s", yylval.name); 
+ return(DATA_TYPE);            
+} 
 
 \"(\\.|[^\"\\])*\" {
                
@@ -52,7 +72,7 @@ alpha     [A-Za-z]
                               
 
 [a-z][A-Za-z0-9]*   {sscanf(yytext, "%s", yylval.name); return(TOK_IDENT);}
-[\n] 	          {linenumber++;}
+[\n] 	            {linenumber++;}
 
 .              {
                    printf("Unrecognized character: %s\n", yytext);

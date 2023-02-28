@@ -2,164 +2,214 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-#include "var_helper.h"
 #include "main.h"
+#include "var_helper.h"
 int yylex();
-int global_variable = 1;
 
 %}
 
-%token LET EQ PLUS DIV MUL SUB LPAREN RPAREN 
-       LBRACKET RBRACKET DIM PRINT TOK_SEMICOLON 
-       TOK_NUM STRING TOK_IDENT ESCAPE LE GE LT 
-       GT EEQ NE AND OR LBRACE RBRACE
-%token IF ELSE
+%token EQ LPAREN RPAREN 
+       LBRACKET RBRACKET DIM PRINT SEMICOLON 
+       TOK_NUM STRING TOK_IDENT LBRACE RBRACE IF ELSE
+       DATA_TYPE OPERATION WHILE FOR COMMA
+
 %union{
 	char name[100];
   int int_val;
+  expr_t* expr;
 }
 
 %type<name>    TOK_IDENT
+%type<name>    DATA_TYPE
+%type<name>    OPERATION
 %type<int_val> TOK_NUM
-%type<int_val> expr
+%type<expr>    expr
 %type<name>    STRING
-%left          PLUS SUB
-%left          MUL  DIV
-%left          EEQ NE LE GE
-%left          LT GT AND OR
+%left          EQ
+%left          OPERATION
+
+%start      prog
 
 %%
 
-prog: prog_lines 
-      ;
+builtin     : print
+            ;
 
-prog_lines :   | prog_line TOK_SEMICOLON prog_lines
-               | if_else_body prog_lines
-               | if_body prog_lines
-           ;   
-
-prog_line :    | assignment 
-               | dim   
-               | print
-               ;
-
-assignment : LET TOK_IDENT EQ expr 
-           {
-          if(global_variable){
-            insert($4,$2);}
-            
-           }
-           | LET TOK_IDENT LBRACKET expr RBRACKET EQ expr 
-           { 
-           if(global_variable){
-             set_array_value($7,$4 ,$2);}
-           }
-           ;
-
-dim  :      DIM TOK_IDENT LBRACKET expr RBRACKET 
+final_expr : expr
             {
-            if(global_variable){
-              insert_arr($4,$2);}
-            };
-
-print :    PRINT LPAREN expr RPAREN {if(global_variable){ 
-           printf("%d\n",$3);} }
-           |
-           
-           PRINT LPAREN STRING RPAREN{
-            if(global_variable){
-               printf("%s\n",$3);
+            add_token_expr(TOK_EXPR,$1);
             }
+            ;
+
+statement:  builtin tok_semicolon
+            | 
+            final_expr tok_semicolon
+            |
+            assigment 
+            |
+            tok_semicolon
+            
+            ;
+
+code_block: statement
+            |
+            code_block statement
+            |
+            LBRACE code_block RBRACE 
+            |
+            if_stmt 
+            |
+            code_block if_stmt
+            |
+            while_stmt
+            |
+            code_block while_stmt
+            |
+            for_stmt
+            |
+            code_block for_stmt
+            |
+            function
+            |
+            code_block function
+            ;
+
+prog:       code_block 
+            ;
+
+
+print_symp  : PRINT
+            {
+            add_token_type(TOK_PRINT);
+            }
+            ;
+
+lparen      : LPAREN
+            {
+            add_token_type(TOK_LPAREN);           
+            }
+            ;
+
+rparen      : RPAREN
+            {
+            add_token_type(TOK_RPAREN);            
+            }
+            ;
+
+lbrace      : LBRACE
+            {
+            add_token_type(TOK_LBRACE);       
+            }
+            ;    
+
+rbrace      : RBRACE
+            {
+             add_token_type(TOK_RBRACE);           
+            }
+            ;   
+
+tok_semicolon : SEMICOLON
+              {
+              add_token_type(TOK_SEMICOLON);            
+              }
+              ;
+
+
+print     :   print_symp lparen final_expr rparen 
+              |           
+              print_symp lparen string rparen 
+              ;
+string    :   STRING
+              {
+              add_token_string(TOK_STRING,$1);              
+              }
+              ; 
+
+If        :   IF
+              {
+              add_token_type(TOK_IF);             
+              }
+              ;
+
+Else          : ELSE
+              {
+              add_token_type(TOK_ELSE);             
+              }
+              ;
+
+if_stmt : If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
+          |
+          If lparen final_expr rparen lbrace code_block rbrace
+          |
+          If lparen final_expr rparen statement
+          ;
+
+While   : WHILE 
+          {
+          add_token_type(TOK_WHILE);             
+          }
+          ;
+
+while_stmt : While lparen final_expr rparen lbrace code_block rbrace
+           
+
+For     : FOR
+          {
+          add_token_type(TOK_FOR);             
+          }
+          ;
+
+for_stmt  : For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
+            |
+            For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
+          
+
+comma    : COMMA
+           {
+           add_token_type(TOK_COMMA);  
            }
            ;
 
-if_else_body : else_stmt prog_lines RBRACE {global_variable = 1;}  
-             ;
-if_body      : if_stmt prog_lines RBRACE
-             ;
-else_stmt    : if_stmt prog_lines RBRACE ELSE LBRACE {global_variable = !global_variable;}
-          ; 
+parameter_list:
+               | DATA_TYPE TOK_IDENT
+               | parameter_list comma DATA_TYPE TOK_IDENT
 
-if_stmt : IF LPAREN expr RPAREN LBRACE{
-  
-if($3){
-  global_variable = 1;
-}
-else{
-  global_variable = 0;
-}
 
-};   
+function : DATA_TYPE final_expr lparen parameter_list rparen lbrace code_block rbrace
 
 
 
+assigment :DATA_TYPE expr EQ expr tok_semicolon
+          {
+          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$2,$4,TOK_ASSIGNMENT));  
+          }
+          | expr EQ expr tok_semicolon
+          {
+          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
+          }
+          |
+          DATA_TYPE expr tok_semicolon 
+          {
+           add_token_expr(TOK_EXPR,create_expr(EXPR_UNARY,$2,NULL,TOK_ASSIGNMENT)); 
+          }
+          ;
 expr:
-  TOK_NUM
+ 
+ TOK_NUM
   {
-    $$ = $1;
-  }
-  |
-  TOK_IDENT LBRACKET expr RBRACKET{
-    $$ = get_array_value($3,$1);
-  } 
-  
+    $$=create_expr_const(EXPR_UNARY,TOK_NUMB,$1);
+  }  
   | TOK_IDENT
   {
-    int i = is_defined($1);
-    if (i == -1) {
-      yyerror("Undeclared identifier");
-      exit(1);
-    } else {
-      $$ = getvalue(i);
-    }
+    $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
   }
-  | expr PLUS expr
+  | expr OPERATION expr
   {
-    $$ = $1 + $3;
-  }
-  | expr DIV expr
-  {
-    $$ = $1 / $3;
-  }
-  | expr MUL expr
-  {
-    $$ = $1 * $3;
-  }
-  | expr AND expr
-  {
-    $$=$1 && $3;
-  }
-  | expr OR expr
-  {
-    $$=$1 || $3;
-  }
-  | expr GT expr
-  {
-    $$=$1 > $3; 
-  }
-   | expr LT expr
-  {
-    $$=$1 < $3; 
-  }
-  | expr EEQ expr
-  {
-    $$=$1 == $3; 
-  }
-  | expr NE expr
-  {
-    $$=$1 != $3; 
-  }
-  | expr GE expr
-  {
-    $$=$1 >= $3; 
-  }
-  | expr LE expr
-  {
-    $$ = $1 <= $3; 
+    $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
   }
   | LPAREN expr RPAREN
   {
-    $$ = $2;
+   $$=create_expr(EXPR_UNARY,$2,NULL,TOK_EXPR);
   }
   ;
 %%
