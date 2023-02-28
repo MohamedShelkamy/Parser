@@ -165,6 +165,7 @@ int get_array_value(int pos ,char name[]){
     else{
        yyerror("not defined array");
     }
+    return 0;
 }
 
 void escape(char* in_word,char* out_word){
@@ -219,7 +220,7 @@ token_t get_operation(char var_name[]){
       }
         
     }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
     
     expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
@@ -228,20 +229,25 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
         exit(1);
     }
     expr->kind = kind;
-
-    if(kind == EXPR_UNARY){
-        expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
-        expr->op_pair[0].operand->expr=(void*)left;
+    expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
+    if (!expr->op_pair[0].operand) {
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+    }
+    expr->op_pair[0].operation= op;
+    expr->op_pair[0].operand->expr=(void*)left;
+    
+    if(kind == EXPR_UNARY){        
         expr->op_pair[0].operand->tok=TOK_EXPR;
-        expr->op_pair[0].operation= op; 
       }
     
 
     if (kind == EXPR_BINARY || kind == EXPR_TERNARY) {
-        expr->op_pair[0].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
-        expr->op_pair[0].operand->expr=(void*)left;
-        expr->op_pair[0].operation= op;
         expr->op_pair[1].operand = (tokclosure_t*)malloc(sizeof(tokclosure_t));
+        if (!expr->op_pair[0].operand){
+        fprintf(stderr, "Error: Out of memory\n");
+        exit(1);
+        }
         expr->op_pair[1].operand->expr = (void*)right;
         expr->op_pair[1].operation = op;
     }
@@ -303,8 +309,6 @@ void add_token_string(token_t tok,char var_name[100]){
       strcpy(new_token.var_name, var_name);
       Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
       Program_tokens[Program_tokens_len-1] = new_token; 
-
-
 }
 
 void add_token_number(token_t tok ,int int_val){
@@ -332,8 +336,8 @@ void add_token_expr(token_t tok ,expr_t *expr){
 
 int execute_expr(expr_t *expr){
     
-    tokclosure_t* operand = expr->op_pair[0].operand;   // first operand
-
+    tokclosure_t* operand  = expr->op_pair[0].operand;  // first operand
+    tokclosure_t* soperand = expr->op_pair[1].operand;  // second operand
     switch(expr->kind) {
       
       case EXPR_UNARY:
@@ -353,7 +357,7 @@ int execute_expr(expr_t *expr){
         break;
 
         default:
-        fprintf(stderr, "unexpected2 type\n");
+        fprintf(stderr, "unexpected operation type\n");
         exit(1);
         return 0;
       }
@@ -361,7 +365,6 @@ int execute_expr(expr_t *expr){
       break;
  
       case EXPR_BINARY:
-        tokclosure_t* soperand  = expr->op_pair[1].operand;      // second operand
          switch (expr->op_pair[0].operation)
          {
          case TOK_PLUS:
@@ -418,15 +421,13 @@ int execute_expr(expr_t *expr){
            return 1;
            break;
          default:
-          fprintf(stderr, "unexpected1 type\n");
+          fprintf(stderr, "unexpected operation\n");
           exit(1); 
           return 0;
           break;
          }  
-      
         break;
 
-    
       default:
       fprintf(stderr, "unexpected type\n");
       exit(1); 
@@ -467,8 +468,8 @@ void interpereter(){                      // this function is responsible to int
     current_token = current_token+2;      // if true we continue normally
   }
   else {                                  // if false we skip the next block 
-    current_token = current_token+2;
-    skip_branch();                        // this one will return back to the else block one token after else token
+    current_token = current_token+2;      // by this our token will point to the correct block
+    skip_branch();                        // this one will return back to the else block "one token after else token"
   }
   break;
  
