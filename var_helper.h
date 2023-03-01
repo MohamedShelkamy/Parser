@@ -119,6 +119,8 @@ data_type get_type(expr_t *expr);
 
 void display(tokclosure_t token);
 
+void while_handler();
+
 void free_expr(expr_t *expr);
 
 void free_tokclosure(tokclosure_t *tc);

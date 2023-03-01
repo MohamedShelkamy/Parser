@@ -4,6 +4,7 @@
 #include "main.h"
 #include "var_helper.h"
 
+//modes Control flags
 extern int linenumber;
 extern int v_flag;
 extern int i_flag;
@@ -13,7 +14,9 @@ tokclosure_t *Program_tokens = NULL;
 size_t Program_tokens_len = 0;
 size_t current_token = 0;
 tokclosure_t new_token;
+//Interpreter Control flags
 int lrbrace = 0;
+int loops   = 0;
 int sloop_token;
 int eloop_token;
 
@@ -377,8 +380,8 @@ expr_t *create_expr_var(exprkind_t kind, token_t op, char var_name[100])
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// the coming four methods are responsible to add the program tokens into our serialized tokens vector
-// as this serialized tokens will be executed later by the interpereter.
+// the coming four functions are responsible to add the program tokens into our serialized tokens vector
+// as this serialized tokens will be executed later by the "interpereter"
 
 void add_token_type(token_t tok)
 {
@@ -399,7 +402,7 @@ void add_token_string(token_t tok, char var_name[100])
   new_token.tok = tok;
   strcpy(new_token.var_name, var_name);
   Program_tokens = (tokclosure_t *)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-  if (!Program_tokens)
+  if (!Program_tokens) // check the correct memory assigment
   {
     fprintf(stderr, "Error: Out of memory\n");
     exit(1);
@@ -436,6 +439,7 @@ void add_token_expr(token_t tok, expr_t *expr)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// set_data_type is responsible to set the data type for the variables
 void set_data_type(expr_t *expr, char dt[])
 {
   if (strcmp(dt, "int") == 0)
@@ -595,47 +599,58 @@ data_type get_type(expr_t *expr)
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// this function is responsible to interperete the parsed program , it works in a recursive way
 void interpereter()
-{ // this function is responsible to interperete the parsed program , it works in a recursive way
+{
   if (current_token >= Program_tokens_len)
     return;
   token_t tok = Program_tokens[current_token].tok;
-  switch (tok)                             // this switch case is responsible to check for the different tok closure in our serilaized vector
+  switch (tok)     // this switch case is responsible to check for the different tok closure in our serilaized vector
   {
   case TOK_PRINT: // case print
     current_token = current_token + 2;
-    display(Program_tokens[current_token]); // from the parser structure we know the expected structure so by this it will access the print statement
-    current_token++;
+    display(Program_tokens[current_token]); // handle print statement
     break;
-  case TOK_IF:                           // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
-    current_token = current_token + 2;   // we access the expression token to check if it is true or false
+  case TOK_IF:
+    current_token = current_token + 2; // we access the expression token to check (true or false)
     if (!execute_expr((expr_t *)Program_tokens[current_token].expr))
     {                                    // if false we will skip the true block
       current_token = current_token + 2; // by adding 2 we jump to execution block so we
-      skip_branch();                     // will skip ")"
+      skip_branch();                     // will skip ")" token
+    }
+    else{
+      if(loops!=0){
+       
+      }
     }
     break;                               // if true we continue normally
 
   case TOK_EXPR:
     execute_expr((expr_t *)Program_tokens[current_token].expr);
-    current_token++;
     break;
 
-  case TOK_ELSE:                         // if we reached this token it means we took the if branch so we have to skip this block
-    current_token++;
+  case TOK_ELSE: // if we reached this token it means we took the if branch so we have to skip this block
     skip_branch();
     break;
-
-  default:
-    current_token++;
+  case TOK_WHILE:
+    current_token=current_token+2;
+    while_handler();
+    break;
+  default: 
     break;
   }
+  current_token++;
+  if (loops!=0)
+  {
+    return;
+  }
+  
   interpereter();
 }
 
+// this method is responsible to skip either if or else blocks
 void skip_branch()
-{ // this method is responsible to skip either if or else blocks
+{
 
   if (Program_tokens[current_token].tok == TOK_LBRACE)
   {
@@ -666,6 +681,7 @@ void skip_branch()
   }
 }
 
+// display function is responsible to handle the print statement
 void display(tokclosure_t token)
 {
 
@@ -687,6 +703,71 @@ void display(tokclosure_t token)
       {
         printf("%f\n", value);
       }
+    }
+  }
+}
+
+void while_handler(){
+  ++loops;
+  size_t expr_token=current_token;
+  current_token=current_token+2;
+  size_t loop_start=current_token;   //by this we point to the loop start token 
+  size_t loop_end  =current_token;   //by this we point to the loop end token
+  
+  if (Program_tokens[current_token].tok == TOK_LBRACE)
+  {
+    lrbrace++;
+  }
+  
+  while (lrbrace != 0 && loop_end <= Program_tokens_len)   // this part to get the while loop boundary
+  {
+    ++loop_end;
+    if (Program_tokens[loop_end].tok == TOK_LBRACE)
+    {
+      ++lrbrace;
+    }
+
+    else if (Program_tokens[loop_end].tok == TOK_RBRACE)
+    {
+      --lrbrace;
+    }
+  }
+  while (execute_expr((expr_t *)Program_tokens[expr_token].expr))
+  {
+    current_token=loop_start;
+    while (current_token<loop_end)
+    {
+      interpereter();
+    }
+    
+  }
+  --loops;
+  current_token=loop_end;
+  return;
+}
+
+void if_loop_handler(){
+  
+  if (Program_tokens[current_token].tok == TOK_LBRACE)
+  {
+    lrbrace++;
+  }
+  else{
+    interpereter();
+  }
+  
+  while (lrbrace != 0 && current_token <= Program_tokens_len)   // this part to get the while loop boundary
+  {
+    interpereter();
+    ++current_token;
+    if (Program_tokens[current_token].tok == TOK_LBRACE)
+    {
+      ++lrbrace;
+    }
+
+    else if (Program_tokens[current_token].tok == TOK_RBRACE)
+    {
+      --lrbrace;
     }
   }
 }
