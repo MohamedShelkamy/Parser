@@ -30,11 +30,17 @@ typedef enum {
 	TOK_NE, 
 	TOK_AND, 
 	TOK_OR, 
-	TOK_COMMA,
+	TOK_COMMA
 } token_t;
+
+typedef enum {
+    DT_INT,
+    DT_FLOAT
+} data_type;
 
 typedef struct {
 	token_t tok;
+	data_type kind;
 	char  var_name[100];
 	int   int_val;
 	float float_val;
@@ -60,11 +66,11 @@ int is_defined(char name[]);
 
 int yyerror(char *s);
 
-void insert(int value, char name[]);
+void insert(float value, char name[],data_type dt );
 
-int getvalue(int i);
+float getvalue(int i);
 
-int get_variable_value(char name[]);
+float get_variable_value(char name[]);
 
 int is_defined_arr(char name[]);
 
@@ -86,9 +92,11 @@ void add_token_expr(token_t tok ,expr_t *expr);
 
 expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 
-expr_t* create_expr_const(exprkind_t kind,token_t op,int value);
+expr_t* create_expr_const(exprkind_t kind,token_t op,int value, float float_value,data_type dt);
 
 expr_t* create_expr_var(exprkind_t kind,token_t op, char var_name[100]);
+
+void	set_data_type(expr_t *expr, char name[]);
 
 void interpereter();
 
@@ -98,9 +106,13 @@ void skip_branch();
 
 char* assign(expr_t *expr);
 
-int execute_expr(expr_t *expr);
+float execute_expr(expr_t *expr);
 
 token_t get_operation(char var_name[]);
+
+data_type	get_type(expr_t *expr);
+
+void display(tokclosure_t token);
 
 void free_expr(expr_t* expr);
 

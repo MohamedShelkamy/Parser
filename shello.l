@@ -53,14 +53,26 @@ alpha     [A-Za-z]
 "for"           { return FOR;}
 ","             {return COMMA;}
 
+
+{digit}+\.{digit}+ {
+                   yylval.float_val = atof(yytext);
+                   return FLOAT;  
+                   }
+
 {digit}+        {
-				    yylval.int_val = atoi(yytext); 
-				    return TOK_NUM; 
+				   yylval.int_val = atoi(yytext); 
+				   return INTEGER; 
 			    }
-(int|float|double|char|void|short|long|unsigned|signed|bool|size_t|void) {
+"int" {
  sscanf(yytext, "%s", yylval.name); 
  return(DATA_TYPE);            
 } 
+
+"float" {
+ sscanf(yytext, "%s", yylval.name); 
+ return(DATA_TYPE);            
+} 
+
 
 \"(\\.|[^\"\\])*\" {
                

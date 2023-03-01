@@ -1,4 +1,4 @@
-int x=5;
+float x=5;
 x=x+10;
 
 if(x==15){
@@ -18,3 +18,4 @@ else{
   if(x==16)
   print("if without curely brackets"); 
 }
+print(x);

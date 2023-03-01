@@ -17,9 +17,12 @@ tokclosure_t new_token;
 int lrbrace=0;
 int sloop_token;
 int eloop_token;
+
 struct symtab{									  
 	char name[20];								  
-	int val;								  
+	int val;
+  float float_val;
+  data_type kind;
 };
 
 struct arrtab{									  
@@ -35,8 +38,11 @@ int ptr	 = 0;
 int ptr_arr = 0; 
 
 
-int getvalue(int i){
-  return tab[i].val;
+float getvalue(int i){
+  if(tab[i].kind==DT_INT)
+    return tab[i].val;
+  else
+    return tab[i].float_val;
 }
 
 
@@ -57,7 +63,7 @@ int is_defined(char name[]){
 }
 
 // this function is responsible to return the value of the variable if defined , otherwise it will throw an error
-int get_variable_value(char name[]){  
+float get_variable_value(char name[]){  
 	int i = is_defined(name);
 	if (i == -1) {
 	  yyerror("Undeclared identifier");
@@ -70,19 +76,26 @@ int get_variable_value(char name[]){
 
 // this function is responsible to insert a variable
 
-void insert(int value, char name[]){
+void insert(float value, char name[],data_type dt ){
 	int position;
 	position=is_defined(name);
 	if(position== -1){	 
 	  if(v_flag==1){
-	   printf("verbose mode : identifier %s was defined on line %d with value equal to %d\n", name,linenumber ,value);
+	   printf("verbose mode : identifier %s was defined on line %d with value equal to %f\n", name,linenumber ,value);
 	  }
-	  tab[ptr].val=value;
-	  strcpy(tab[ptr].name, name);
+	  if(dt==DT_INT){
+      tab[ptr].val=value;}
+    else{
+      tab[ptr].float_val=value;}
+	  tab[ptr].kind=dt;
+    strcpy(tab[ptr].name, name);
 	  ptr++;
 	}
 	else {
-	  tab[position].val=value; 
+    if(tab[position].kind==DT_INT){
+	    tab[position].val=value;}
+    else{
+      tab[position].float_val=value; }
 	}
 
 }
@@ -256,7 +269,7 @@ expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op) {
 }
 
 
-expr_t* create_expr_const(exprkind_t kind,token_t op,int value){
+expr_t* create_expr_const(exprkind_t kind,token_t op,int value, float float_value,data_type dt){
 	  
 	  expr_t *expr =(expr_t*)malloc(sizeof(expr_t));
 	  if (!expr) {
@@ -265,8 +278,10 @@ expr_t* create_expr_const(exprkind_t kind,token_t op,int value){
 	  } 
 	  expr->kind = kind;
 	  tokclosure_t* operand =(tokclosure_t*)malloc(sizeof(tokclosure_t));
-	  operand->int_val=value;
+	  operand->int_val=value;            
+    operand->float_val=float_value;
 	  operand->tok=TOK_NUMB;
+    operand->kind=dt;
 	  expr->op_pair[0].operand = operand;
 	  expr->op_pair[0].operation = op;
 	  return expr;
@@ -282,15 +297,14 @@ expr_t* create_expr_var(exprkind_t kind,token_t op,char var_name[100]){
 	  expr->kind = kind;
 	  tokclosure_t* operand =(tokclosure_t*)malloc(sizeof(tokclosure_t));
 	  operand->tok=TOK_VAR;
-	  strncpy(operand->var_name, var_name, sizeof(operand->var_name) - 1);
+    strncpy(operand->var_name, var_name, sizeof(operand->var_name) - 1);
 	  expr->op_pair[0].operand = operand;
 	  expr->op_pair[0].operation = op;
 	  return expr;
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // the coming four methods are responsible to add the program tokens into our serialized tokens vector
 // as this serialized tokens will be executed later by the interpereter.
@@ -337,20 +351,28 @@ void add_token_expr(token_t tok ,expr_t *expr){
 	  new_token.tok=tok;
 	  new_token.expr=(void*)expr;
 	  Program_tokens = (tokclosure_t*)realloc(Program_tokens, sizeof(tokclosure_t) * (++Program_tokens_len));
-	  if(!Program_tokens){
+    if(!Program_tokens){
 		fprintf(stderr, "Error: Out of memory\n");
 		exit(1);
 	  }
 	  Program_tokens[Program_tokens_len-1] = new_token; 
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+void	set_data_type(expr_t *expr, char dt[]){
+  if(strcmp(dt,"int")==0){
+    expr->op_pair[0].operand->kind=DT_INT;}
+  else {
+    if(strcmp(dt,"float")==0){
+    expr->op_pair[0].operand->kind=DT_FLOAT;  
+    }
+    else {
+    expr->op_pair[0].operand->kind=100;}}
+}
 
 // this function is responsible to execute any expression recursively
 
-int execute_expr(expr_t *expr){
+float execute_expr(expr_t *expr){
 	
 	tokclosure_t* operand  = expr->op_pair[0].operand;  // first operand
 	tokclosure_t* soperand = expr->op_pair[1].operand;  // second operand
@@ -361,7 +383,10 @@ int execute_expr(expr_t *expr){
 	  switch(operand->tok) {
 		
 		case TOK_NUMB:
-		return operand->int_val;
+    if(operand->kind==DT_INT)
+		  return operand->int_val;
+    else
+      return operand->float_val;
 		break;
 
 		case TOK_VAR:
@@ -432,8 +457,7 @@ int execute_expr(expr_t *expr){
 		 break;
 		 
 		 case TOK_ASSIGNMENT:
-		   
-		   insert(execute_expr((expr_t*)soperand->expr),assign((expr_t*)operand->expr));
+		   insert(execute_expr((expr_t*)soperand->expr),assign((expr_t*)operand->expr), get_type((expr_t*)operand->expr));
 		   return 1;
 		   break;
 		 default:
@@ -455,36 +479,48 @@ int execute_expr(expr_t *expr){
 
 char* assign(expr_t *expr){
   
-  tokclosure_t* operand = expr->op_pair[0].operand; 
+  tokclosure_t* operand = expr->op_pair[0].operand;
   if(expr->op_pair[0].operation != TOK_VAR || expr->kind != EXPR_UNARY ){
 	fprintf(stderr, "wrong assigment\n");
 	exit(1); 
   }
-
   return operand->var_name;
-  
+}
+
+data_type get_type(expr_t *expr){
+  data_type kind=expr->op_pair[0].operand->kind;
+  if(kind!=DT_INT && kind!=DT_FLOAT){   
+    int pos=is_defined(expr->op_pair[0].operand->var_name);
+    if(pos==-1){
+      printf("error a variable without data type initialization\n");
+      exit(1);
+    }
+    else{
+    return tab[pos].kind;}
+   }  
+  return kind;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void interpereter(){					  // this function is responsible to interperete the parsed program , it works in a recursive way
+void interpereter(){					                      // this function is responsible to interperete the parsed program , it works in a recursive way
  if(current_token >= Program_tokens_len) 
    return;
  token_t tok=Program_tokens[current_token].tok;
- switch (tok)							 // this switch case is responsible to check for the different tok closure in our serilaized vector 
+ switch (tok)							                          // this switch case is responsible to check for the different tok closure in our serilaized vector 
  {
- case TOK_PRINT :						 // case print 
-  current_token = current_token+2;		// from the parser structure we know the expected structure so by this it will access the print statement
-  printf("%s\n",Program_tokens[current_token].var_name);
+ case TOK_PRINT :						                        // case print 
+  current_token = current_token+2;
+  display(Program_tokens[current_token]);                                              		              // from the parser structure we know the expected structure so by this it will access the print statement
   current_token++;
   break;
- case TOK_IF :							// case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
-  current_token = current_token+2;		// we access the expression token to check if it is true or false
+ case TOK_IF :							                                       // case if we check for the expression if it is true we procceed with the next token if not we skip the whole block
+  current_token = current_token+2;		                             // we access the expression token to check if it is true or false
   if(!execute_expr((expr_t*)Program_tokens[current_token].expr)){  // if false we will skip the true block
-	current_token = current_token+2;							   // by adding 2 we jump to execution block so we 
-	skip_branch();												 // will skip ")"
+	current_token = current_token+2;							                   // by adding 2 we jump to execution block so we 
+	skip_branch();												                           // will skip ")"
   }
-  break;								  // if true we continue normally
+  break;								                                           // if true we continue normally
  
  case TOK_EXPR :
   execute_expr((expr_t*)Program_tokens[current_token].expr);
@@ -533,6 +569,27 @@ if(Program_tokens[current_token].tok==TOK_ELSE){
   current_token++;
   }
  
+}
+
+void display(tokclosure_t token){
+  
+  expr_t* expr=(expr_t*)token.expr;
+  if(token.tok==TOK_STRING)
+    printf("%s\n",Program_tokens[current_token].var_name);
+  else{
+    if(token.tok==TOK_EXPR){
+     float value=execute_expr(expr);
+     int i=is_defined(expr->op_pair[0].operand->var_name);
+     if(tab[i].kind==DT_INT){
+       i=value;
+       printf("%d\n",i);
+     }
+     else{
+      printf("%f\n",value);
+     }
+      
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
