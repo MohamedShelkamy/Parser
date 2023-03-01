@@ -1,7 +1,8 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
-typedef enum {
+typedef enum
+{
 	TOK_WHILE,
 	TOK_FOR,
 	TOK_IF,
@@ -9,9 +10,9 @@ typedef enum {
 	TOK_STRING,
 	TOK_SEMICOLON,
 	TOK_PRINT,
-	TOK_LPAREN, 
+	TOK_LPAREN,
 	TOK_RPAREN,
-	TOK_LBRACE, 
+	TOK_LBRACE,
 	TOK_RBRACE,
 	TOK_NUMB,
 	TOK_LET,
@@ -22,51 +23,55 @@ typedef enum {
 	TOK_MINUS,
 	TOK_DIV,
 	TOK_MUL,
-	TOK_LE, 
+	TOK_LE,
 	TOK_GE,
 	TOK_LT,
- 	TOK_GT, 
-	TOK_EEQ, 
-	TOK_NE, 
-	TOK_AND, 
-	TOK_OR, 
+	TOK_GT,
+	TOK_EEQ,
+	TOK_NE,
+	TOK_AND,
+	TOK_OR,
 	TOK_COMMA
 } token_t;
 
-typedef enum {
-    DT_INT,
-    DT_FLOAT
+typedef enum
+{
+	DT_INT,
+	DT_FLOAT
 } data_type;
 
-typedef struct {
+typedef struct
+{
 	token_t tok;
 	data_type kind;
-	char  var_name[100];
-	int   int_val;
+	char var_name[100];
+	int int_val;
 	float float_val;
-	void* expr;
+	void *expr;
 } tokclosure_t;
 
-typedef enum {
+typedef enum
+{
 	EXPR_UNARY,
 	EXPR_BINARY,
 	EXPR_TERNARY
 } exprkind_t;
 
-typedef struct {
+typedef struct
+{
 	exprkind_t kind;
-	struct {
-		tokclosure_t* operand;
+	struct
+	{
+		tokclosure_t *operand;
 		token_t operation;
 	} op_pair[3];
 } expr_t;
-
 
 int is_defined(char name[]);
 
 int yyerror(char *s);
 
-void insert(float value, char name[],data_type dt );
+void insert(float value, char name[], data_type dt);
 
 float getvalue(int i);
 
@@ -76,27 +81,27 @@ int is_defined_arr(char name[]);
 
 void insert_arr(int value, char name[]);
 
-void set_array_value(int value,int pos ,char name[]);
+void set_array_value(int value, int pos, char name[]);
 
-int get_array_value(int pos ,char name[]);
+int get_array_value(int pos, char name[]);
 
-void escape(char* in_word,char* out_word);
+void escape(char *in_word, char *out_word);
 
 void add_token_type(token_t tok);
 
-void add_token_string(token_t tok,char var_name[100]);
+void add_token_string(token_t tok, char var_name[100]);
 
-void add_token_number(token_t tok ,int int_val);
+void add_token_number(token_t tok, int int_val);
 
-void add_token_expr(token_t tok ,expr_t *expr);
+void add_token_expr(token_t tok, expr_t *expr);
 
-expr_t* create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
+expr_t *create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op);
 
-expr_t* create_expr_const(exprkind_t kind,token_t op,int value, float float_value,data_type dt);
+expr_t *create_expr_const(exprkind_t kind, token_t op, int value, float float_value, data_type dt);
 
-expr_t* create_expr_var(exprkind_t kind,token_t op, char var_name[100]);
+expr_t *create_expr_var(exprkind_t kind, token_t op, char var_name[100]);
 
-void	set_data_type(expr_t *expr, char name[]);
+void set_data_type(expr_t *expr, char name[]);
 
 void interpereter();
 
@@ -104,18 +109,18 @@ void take_branch();
 
 void skip_branch();
 
-char* assign(expr_t *expr);
+char *assign(expr_t *expr);
 
 float execute_expr(expr_t *expr);
 
 token_t get_operation(char var_name[]);
 
-data_type	get_type(expr_t *expr);
+data_type get_type(expr_t *expr);
 
 void display(tokclosure_t token);
 
-void free_expr(expr_t* expr);
+void free_expr(expr_t *expr);
 
-void free_tokclosure(tokclosure_t* tc);
+void free_tokclosure(tokclosure_t *tc);
 
 #endif
