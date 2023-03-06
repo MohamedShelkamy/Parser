@@ -1,17 +1,26 @@
 void bebo(int x){
-print(x);
+    print(x);
+    while(x<12){
+        x=x+1;
+        }
+    print("updated x");
+    print(x);
+    print("new iteration"); 
 }
 
+void teto(){
+    print("exit the loop");
+}
 int x=5;
 x=x+10;
 int y =10;
-int k=0;
 while(x<17){
+  print("outter itteration");
   while(y<12){
-    k=bebo(y);
+    bebo(y);
     y=y+1;
   }
   y =10;
   x=x+1;
 }
-print("exit the loop");
+teto();
