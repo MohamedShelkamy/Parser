@@ -72,6 +72,10 @@ code_block: statement
             function
             |
             code_block function
+            |
+            function_call tok_semicolon
+            |
+            code_block function_call tok_semicolon
             ;
                
 prog:       code_block 
@@ -176,7 +180,7 @@ input_list : {$$=create_expr(EXPR_UNARY,NULL,NULL,TOK_EMPTY);}
              
 function_call : expr LPAREN input_list RPAREN
               {
-               $$=create_expr(EXPR_BINARY,$1,$3,TOK_CALL); 
+                add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_CALL)); 
               }
               ;
 
@@ -186,12 +190,6 @@ assigment :DATA_TYPE expr EQ expr tok_semicolon
           add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$2,$4,TOK_ASSIGNMENT));  
           }
           | expr EQ expr tok_semicolon
-          {
-          set_data_type($1,"10");  
-          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
-          }
-          |
-          expr EQ function_call tok_semicolon
           {
           set_data_type($1,"10");  
           add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
