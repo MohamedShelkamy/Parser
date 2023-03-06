@@ -4,7 +4,7 @@
 #include "main.h"
 #include "var_helper.h"
 
-//modes Control flags
+// modes Control flags
 extern int linenumber;
 extern int v_flag;
 extern int i_flag;
@@ -14,32 +14,21 @@ tokclosure_t *Program_tokens = NULL;
 size_t Program_tokens_len = 0;
 size_t current_token = 0;
 tokclosure_t new_token;
-//Interpreter Control flags
+// Interpreter Control flags
 int lrbrace = 0;
-int loops   = 0;
+int loops = 0;
 int sloop_token;
 int eloop_token;
 
-struct symtab
-{
-  char name[20];
-  int val;
-  float float_val;
-  data_type kind;
-};
-
-struct arrtab
-{
-  char name[20];
-  int *arr;
-  int size;
-};
-
 struct symtab tab[200];
-
+struct funtab funtab[200];
 struct arrtab arrtab[200];
 int ptr = 0;
+int ptr_fun = 0;
 int ptr_arr = 0;
+
+// function name 
+char function_name[100];
 
 float getvalue(int i)
 {
@@ -47,6 +36,26 @@ float getvalue(int i)
     return tab[i].val;
   else
     return tab[i].float_val;
+}
+
+// this function to check if the function is already defined or not
+
+int is_defined_fun(char name[])
+{
+
+  int i;
+  int flag = -1;
+
+  for (i = 0; i < ptr; i++)
+  {
+    if (strcmp(funtab[i].name, name) == 0)
+    {
+      flag = i;
+      break;
+    }
+  }
+
+  return flag;
 }
 
 // this function is responsible to check if the the variable is defined before or not
@@ -552,6 +561,10 @@ float execute_expr(expr_t *expr)
       insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr));
       return 1;
       break;
+    case TOK_CALL:
+      call_function((expr_t *)operand->expr,(expr_t *)soperand->expr);
+      return 0;
+      break;
     default:
       fprintf(stderr, "unexpected operation\n");
       exit(1);
@@ -567,8 +580,37 @@ float execute_expr(expr_t *expr)
   }
 }
 
-char *assign(expr_t *expr)
-{
+float call_function(expr_t *fun ,expr_t *par){                                    // here we need to search for the function name and then go for these expressions
+  strcpy(function_name,assign(fun));
+  set_function_parameter(par);
+  return 0;                                                                                // one by one and execute it to get the parameters then we will fill the function 
+}
+
+void set_function_parameter(expr_t *expr){
+ 
+ int pointer=is_defined_fun(function_name);
+ int current_parameter=funtab[pointer].par_set;
+ if (expr->kind== EXPR_UNARY)
+ {
+  if (expr->op_pair[0].operation!=TOK_EMPTY)
+  {
+    funtab[pointer].function_parameters[current_parameter].val=execute_expr((expr_t *)expr->op_pair[0].operand->expr);
+   
+  }
+  if(current_parameter!=0){
+   printf("functions parameters do not match with the function definition");    
+  }
+   return;
+ }
+ funtab[pointer].function_parameters[current_parameter].val=execute_expr((expr_t *)expr->op_pair[1].operand->expr);
+ --funtab[pointer].par_set;
+ set_function_parameter(expr->op_pair[0].operand->expr); 
+}
+
+                                                                                  // so it may work we create another function that will return a list of values
+                                                                                  // then we check for the function and fill it then we call the function caller 
+char *assign(expr_t *expr)                                                        // that will execute the function between the first token and last token 
+{ 
 
   tokclosure_t *operand = expr->op_pair[0].operand;
   if (expr->op_pair[0].operation != TOK_VAR || expr->kind != EXPR_UNARY)
@@ -605,7 +647,7 @@ void interpereter()
   if (current_token >= Program_tokens_len)
     return;
   token_t tok = Program_tokens[current_token].tok;
-  switch (tok)     // this switch case is responsible to check for the different tok closure in our serilaized vector
+  switch (tok)    // this switch case is responsible to check for the different tok closure in our serilaized vector
   {
   case TOK_PRINT: // case print
     current_token = current_token + 2;
@@ -618,12 +660,13 @@ void interpereter()
       current_token = current_token + 2; // by adding 2 we jump to execution block so we
       skip_branch();                     // will skip ")" token
     }
-    else{
-      if(loops!=0){
-       
+    else
+    {
+      if (loops != 0)
+      {
       }
     }
-    break;                               // if true we continue normally
+    break; // if true we continue normally
 
   case TOK_EXPR:
     execute_expr((expr_t *)Program_tokens[current_token].expr);
@@ -633,18 +676,21 @@ void interpereter()
     skip_branch();
     break;
   case TOK_WHILE:
-    current_token=current_token+2;
+    current_token = current_token + 2;
     while_handler();
     break;
-  default: 
+  case TOK_DT:
+    define_function();
+    break;
+  default:
     break;
   }
   current_token++;
-  if (loops!=0)
+  if (loops != 0)
   {
     return;
   }
-  
+
   interpereter();
 }
 
@@ -707,19 +753,20 @@ void display(tokclosure_t token)
   }
 }
 
-void while_handler(){
+void while_handler()
+{
   ++loops;
-  size_t expr_token=current_token;
-  current_token=current_token+2;
-  size_t loop_start=current_token;   //by this we point to the loop start token 
-  size_t loop_end  =current_token;   //by this we point to the loop end token
-  
+  size_t expr_token = current_token;
+  current_token = current_token + 2;
+  size_t loop_start = current_token; // by this we point to the loop start token
+  size_t loop_end = current_token;   // by this we point to the loop end token
+
   if (Program_tokens[current_token].tok == TOK_LBRACE)
   {
     lrbrace++;
   }
-  
-  while (lrbrace != 0 && loop_end <= Program_tokens_len)   // this part to get the while loop boundary
+
+  while (lrbrace != 0 && loop_end <= Program_tokens_len) // this part to get the while loop boundary
   {
     ++loop_end;
     if (Program_tokens[loop_end].tok == TOK_LBRACE)
@@ -734,29 +781,30 @@ void while_handler(){
   }
   while (execute_expr((expr_t *)Program_tokens[expr_token].expr))
   {
-    current_token=loop_start;
-    while (current_token<loop_end)
+    current_token = loop_start;
+    while (current_token < loop_end)
     {
       interpereter();
     }
-    
   }
   --loops;
-  current_token=loop_end;
+  current_token = loop_end;
   return;
 }
 
-void if_loop_handler(){
-  
+void if_loop_handler()
+{
+
   if (Program_tokens[current_token].tok == TOK_LBRACE)
   {
     lrbrace++;
   }
-  else{
+  else
+  {
     interpereter();
   }
-  
-  while (lrbrace != 0 && current_token <= Program_tokens_len)   // this part to get the while loop boundary
+
+  while (lrbrace != 0 && current_token <= Program_tokens_len) // this part to get the while loop boundary
   {
     interpereter();
     ++current_token;
@@ -772,8 +820,98 @@ void if_loop_handler(){
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void define_function()
+{
 
+  funtab[ptr_fun].return_type = get_par_type(Program_tokens[current_token].var_name);
+  current_token++;
+  char fun_name[200];
+  strcpy(fun_name, Program_tokens[current_token].var_name);
+  if (is_defined_fun(fun_name) != -1)
+  {
+    printf("already defined function");
+    exit(1);
+  }
+  strcpy(funtab[ptr_fun].name, fun_name);
+  current_token++;
+  funtab[ptr_fun].function_parameters = NULL;
+  funtab[ptr_fun].par_num=get_func_parameters();
+  funtab[ptr_fun].start_token = current_token;
+  function_boundary();
+  funtab[ptr_fun].end_token = current_token;
+  funtab[ptr_fun].par_set=funtab[ptr_fun].par_num-1;
+  ++ptr_fun;
+}
+
+// this function is responslible to have return the number of parameters of any function
+//  it works as ittakes number of tokens and then it return integer number that reflects the number of parameters
+int get_func_parameters()
+{
+
+  int par_num = 0;
+  char dt[100];
+  char parameter_name[100]; // Allocate memory for parameter_name
+  parameters_t parameter;
+  while (Program_tokens[current_token].tok != TOK_RPAREN)
+  {
+    if (Program_tokens[current_token].tok == TOK_DT)
+    {
+      strcpy(dt, Program_tokens[current_token].var_name);
+      strcpy(parameter_name, Program_tokens[++current_token].var_name);
+      parameter.kind = get_par_type(dt);
+      parameter.val = 0;
+      parameter.float_val = 0.0;
+      strcpy(parameter.name, parameter_name);
+      ++par_num;
+      funtab[ptr_fun].function_parameters = (parameters_t *)realloc(funtab[ptr_fun].function_parameters, sizeof(parameters_t) * par_num);
+      funtab[ptr_fun].function_parameters[par_num - 1] = parameter;
+    }
+    else
+    {
+      ++current_token;
+    }
+  }
+  ++current_token;
+  return par_num;
+}
+
+data_type get_par_type(char type[])
+{
+  if (strcmp(type, "int") == 0)
+  {
+    return DT_INT;
+  }
+  else
+  {
+    return DT_FLOAT;
+  }
+}
+
+// this function will return the boundary between any two curely brakets
+void function_boundary()
+{
+
+  if (Program_tokens[current_token].tok == TOK_LBRACE)
+  {
+    lrbrace++;
+  }
+
+  while (lrbrace != 0 && current_token <= Program_tokens_len) // this part to get the while loop boundary
+  {
+    ++current_token;
+    if (Program_tokens[current_token].tok == TOK_LBRACE)
+    {
+      ++lrbrace;
+    }
+
+    else if (Program_tokens[current_token].tok == TOK_RBRACE)
+    {
+      --lrbrace;
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // these two functions are responsible to free the memory
 
 void free_expr(expr_t *expr)

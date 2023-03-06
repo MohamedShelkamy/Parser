@@ -1,12 +1,12 @@
 int x=5;
 x=x+10;
-int y =10;
+int y =9;
 while(x<17){
   while(y<12){
     print("aflam l2 ya 4e5na");
     y=y+1;
   }
-  
+  int y =9;
   if(x<10){
    print(x);}
   else{

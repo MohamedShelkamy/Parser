@@ -1,0 +1,5 @@
+int bebo(int x, int y , int z){x=5;}
+
+int y=0;
+y=bebo(5,4,6);
+

@@ -31,7 +31,12 @@ typedef enum
 	TOK_NE,
 	TOK_AND,
 	TOK_OR,
-	TOK_COMMA
+	TOK_COMMA,
+	TOK_DT,
+	TOK_NAME,
+	TOK_INPUTLIST,
+	TOK_CALL,
+	TOK_EMPTY
 } token_t;
 
 typedef enum
@@ -67,7 +72,44 @@ typedef struct
 	} op_pair[3];
 } expr_t;
 
+typedef struct 
+{
+  char name[20];
+  int val;
+  float float_val;
+  data_type kind;	
+}parameters_t;
+
+
+struct symtab
+{
+  char name[20];
+  int val;
+  float float_val;
+  data_type kind;
+};
+
+struct arrtab
+{
+  char name[20];
+  int *arr;
+  int size;
+};
+
+struct funtab
+{
+char name[200];
+size_t start_token;
+size_t end_token;
+data_type return_type;
+int    par_num;
+int    par_set;
+parameters_t* function_parameters;
+};
+
 int is_defined(char name[]);
+
+int is_defined_fun(char name[]);
 
 int yyerror(char *s);
 
@@ -124,5 +166,17 @@ void while_handler();
 void free_expr(expr_t *expr);
 
 void free_tokclosure(tokclosure_t *tc);
+
+void define_function();
+
+int get_func_parameters();
+
+data_type get_par_type(char type[]);
+
+void function_boundary();
+
+float call_function(expr_t *fun ,expr_t *par);
+
+void set_function_parameter(expr_t *expr);
 
 #endif

@@ -72,6 +72,9 @@ alpha     [A-Za-z]
  sscanf(yytext, "%s", yylval.name); 
  return(DATA_TYPE);            
 } 
+"return" {
+    return(RETURN);
+}
 
 
 \"(\\.|[^\"\\])*\" {

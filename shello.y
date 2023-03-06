@@ -11,7 +11,7 @@ int yylex();
 %token EQ LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT SEMICOLON 
        INTEGER STRING TOK_IDENT LBRACE RBRACE IF ELSE
-       DATA_TYPE OPERATION WHILE FOR COMMA FLOAT
+       DATA_TYPE OPERATION WHILE FOR COMMA FLOAT RETURN
 
 %union{
 	char name[100];
@@ -26,6 +26,8 @@ int yylex();
 %type<int_val> INTEGER
 %type<float_val> FLOAT
 %type<expr>    expr
+%type<expr>    function_call
+%type<expr>    input_list
 %type<name>    STRING
 %left          EQ
 %left          OPERATION
@@ -52,6 +54,7 @@ statement:  builtin tok_semicolon
             tok_semicolon
             ;
 
+
 code_block: statement
             |
             code_block statement
@@ -66,15 +69,11 @@ code_block: statement
             |
             code_block while_stmt
             |
-            for_stmt
-            |
-            code_block for_stmt
-            |
             function
             |
             code_block function
             ;
-
+               
 prog:       code_block 
             ;
 
@@ -153,32 +152,33 @@ While   : WHILE
 
 while_stmt : While lparen final_expr rparen lbrace code_block rbrace
            
-
-For     : FOR
-          {
-          add_token_type(TOK_FOR);             
-          }
+type_name : DATA_TYPE TOK_IDENT
+            {
+            add_token_string(TOK_DT,$1);
+            add_token_string(TOK_NAME,$2);
+            }
           ;
 
-for_stmt  : For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace code_block rbrace
-            |
-            For lparen assigment SEMICOLON final_expr SEMICOLON assigment rparen lbrace rbrace
-          
-
-comma    : COMMA
-           {
-           add_token_type(TOK_COMMA);  
-           }
-           ;
-
+comma     : COMMA{add_token_type(TOK_COMMA);}
+          ;
+ 
 parameter_list:
-               | DATA_TYPE TOK_IDENT
-               | parameter_list comma DATA_TYPE TOK_IDENT
+               | type_name
+               | parameter_list comma type_name
+
+function : type_name lparen parameter_list rparen lbrace code_block rbrace
 
 
-function : DATA_TYPE final_expr lparen parameter_list rparen lbrace code_block rbrace
-
-
+input_list : {$$=create_expr(EXPR_UNARY,NULL,NULL,TOK_EMPTY);}
+             |expr {$$=create_expr(EXPR_UNARY,$1,NULL,TOK_INPUTLIST);}
+             |input_list comma expr{$$=create_expr(EXPR_BINARY,$1,$3,TOK_INPUTLIST);}
+                
+             
+function_call : expr LPAREN input_list RPAREN
+              {
+               $$=create_expr(EXPR_BINARY,$1,$3,TOK_CALL); 
+              }
+              ;
 
 assigment :DATA_TYPE expr EQ expr tok_semicolon
           { 
@@ -187,11 +187,17 @@ assigment :DATA_TYPE expr EQ expr tok_semicolon
           }
           | expr EQ expr tok_semicolon
           {
-          set_data_type($1,"0");  
+          set_data_type($1,"10");  
           add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
           }
           |
-          DATA_TYPE expr tok_semicolon 
+          expr EQ function_call tok_semicolon
+          {
+          set_data_type($1,"10");  
+          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
+          }
+          |
+          DATA_TYPE expr tok_semicolon  
           {
            set_data_type($2,$1); 
            add_token_expr(TOK_EXPR,create_expr(EXPR_UNARY,$2,NULL,TOK_ASSIGNMENT)); 
@@ -211,7 +217,7 @@ expr:
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
   }
-  | expr OPERATION expr
+  | expr OPERATION expr 
   {
     $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
   }
