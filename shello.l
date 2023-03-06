@@ -67,6 +67,10 @@ alpha     [A-Za-z]
  sscanf(yytext, "%s", yylval.name); 
  return(DATA_TYPE);            
 } 
+"void" {
+ sscanf(yytext, "%s", yylval.name); 
+ return(DATA_TYPE);            
+} 
 
 "float" {
  sscanf(yytext, "%s", yylval.name); 

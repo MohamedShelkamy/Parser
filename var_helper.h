@@ -179,4 +179,6 @@ float call_function(expr_t *fun ,expr_t *par);
 
 void set_function_parameter(expr_t *expr);
 
+float execute_function(char name[]);
+
 #endif

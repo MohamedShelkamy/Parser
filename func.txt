@@ -1,5 +1,17 @@
-int bebo(int x, int y , int z){x=5;}
+void bebo(int x){
+print(x);
+}
 
-int y=0;
-y=bebo(5,4,6);
-
+int x=5;
+x=x+10;
+int y =10;
+int k=0;
+while(x<17){
+  while(y<12){
+    k=bebo(y);
+    y=y+1;
+  }
+  y =10;
+  x=x+1;
+}
+print("exit the loop");

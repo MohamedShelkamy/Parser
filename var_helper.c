@@ -27,8 +27,9 @@ int ptr = 0;
 int ptr_fun = 0;
 int ptr_arr = 0;
 
-// function name 
+// function name
 char function_name[100];
+int fun_active=0;
 
 float getvalue(int i)
 {
@@ -91,7 +92,20 @@ float get_variable_value(char name[])
     return getvalue(i);
   }
 }
-
+float get_function_variable (char name[]) {
+  int i = is_defined_fun(function_name);
+  for (int k = 0; k < funtab[i].par_num; k++)
+  {
+    if (strcmp(name,funtab[i].function_parameters[k].name)==0)
+    {
+      return funtab[i].function_parameters[k].val;
+    }
+    
+  }
+  printf("undefined variable");
+  exit(1);
+  return 0;
+}
 // this function is responsible to insert a variable
 
 void insert(float value, char name[], data_type dt)
@@ -491,7 +505,9 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_VAR:
-      return get_variable_value(operand->var_name);
+      if(!fun_active){
+        return get_variable_value(operand->var_name);}
+      return get_function_variable(operand->var_name);
       break;
 
     case TOK_EXPR:
@@ -562,7 +578,7 @@ float execute_expr(expr_t *expr)
       return 1;
       break;
     case TOK_CALL:
-      call_function((expr_t *)operand->expr,(expr_t *)soperand->expr);
+      call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
       return 0;
       break;
     default:
@@ -580,37 +596,59 @@ float execute_expr(expr_t *expr)
   }
 }
 
-float call_function(expr_t *fun ,expr_t *par){                                    // here we need to search for the function name and then go for these expressions
-  strcpy(function_name,assign(fun));
+float call_function(expr_t *fun, expr_t *par)
+{ // here we need to search for the function name and then go for these expressions
+  strcpy(function_name, assign(fun));
   set_function_parameter(par);
-  return 0;                                                                                // one by one and execute it to get the parameters then we will fill the function 
+  fun_active=1;
+  execute_function(function_name);
+  fun_active=0;
+  return 0; // one by one and execute it to get the parameters then we will fill the function
 }
 
-void set_function_parameter(expr_t *expr){
- 
- int pointer=is_defined_fun(function_name);
- int current_parameter=funtab[pointer].par_set;
- if (expr->kind== EXPR_UNARY)
- {
-  if (expr->op_pair[0].operation!=TOK_EMPTY)
+float execute_function(char name[])
+{
+  int pos = is_defined_fun(name);
+  size_t current = current_token;
+  size_t last_token = funtab[pos].end_token;
+  current_token = funtab[pos].start_token;
+  loops++;
+  while (current_token <= last_token)
   {
-    funtab[pointer].function_parameters[current_parameter].val=execute_expr((expr_t *)expr->op_pair[0].operand->expr);
-   
+    interpereter();
   }
-  if(current_parameter!=0){
-   printf("functions parameters do not match with the function definition");    
-  }
-   return;
- }
- funtab[pointer].function_parameters[current_parameter].val=execute_expr((expr_t *)expr->op_pair[1].operand->expr);
- --funtab[pointer].par_set;
- set_function_parameter(expr->op_pair[0].operand->expr); 
+  loops--;
+  current_token=current+1;
+  return 0;
 }
 
-                                                                                  // so it may work we create another function that will return a list of values
-                                                                                  // then we check for the function and fill it then we call the function caller 
-char *assign(expr_t *expr)                                                        // that will execute the function between the first token and last token 
-{ 
+void set_function_parameter(expr_t *expr)
+{
+
+  int pointer = is_defined_fun(function_name);
+  int current_parameter = funtab[pointer].par_set;
+  if (expr->kind == EXPR_UNARY)
+  {
+    if (expr->op_pair[0].operation != TOK_EMPTY)
+    {
+      funtab[pointer].function_parameters[current_parameter].val = execute_expr((expr_t *)expr->op_pair[0].operand->expr);
+    }
+    if (current_parameter != 0)
+    {
+      printf("functions parameters do not match with the function definition");
+      exit(1);
+    }
+    return;
+  }
+  funtab[pointer].function_parameters[current_parameter].val = execute_expr((expr_t *)expr->op_pair[1].operand->expr);
+  --funtab[pointer].par_set;
+  set_function_parameter(expr->op_pair[0].operand->expr);
+}
+
+// so it may work we create another function that will return a list of values
+// then we check for the function and fill it then we call the function caller
+char *assign(expr_t *expr) // that will execute the function between the first token and last token
+{
 
   tokclosure_t *operand = expr->op_pair[0].operand;
   if (expr->op_pair[0].operation != TOK_VAR || expr->kind != EXPR_UNARY)
@@ -647,7 +685,7 @@ void interpereter()
   if (current_token >= Program_tokens_len)
     return;
   token_t tok = Program_tokens[current_token].tok;
-  switch (tok)    // this switch case is responsible to check for the different tok closure in our serilaized vector
+  switch (tok) // this switch case is responsible to check for the different tok closure in our serilaized vector
   {
   case TOK_PRINT: // case print
     current_token = current_token + 2;
@@ -835,11 +873,11 @@ void define_function()
   strcpy(funtab[ptr_fun].name, fun_name);
   current_token++;
   funtab[ptr_fun].function_parameters = NULL;
-  funtab[ptr_fun].par_num=get_func_parameters();
+  funtab[ptr_fun].par_num = get_func_parameters();
   funtab[ptr_fun].start_token = current_token;
   function_boundary();
   funtab[ptr_fun].end_token = current_token;
-  funtab[ptr_fun].par_set=funtab[ptr_fun].par_num-1;
+  funtab[ptr_fun].par_set = funtab[ptr_fun].par_num - 1;
   ++ptr_fun;
 }
 
