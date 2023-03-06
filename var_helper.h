@@ -113,6 +113,8 @@ int is_defined_fun(char name[]);
 
 int yyerror(char *s);
 
+void ins_fun_par(float value, char name[]);
+
 void insert(float value, char name[], data_type dt);
 
 float getvalue(int i);

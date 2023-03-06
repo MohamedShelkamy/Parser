@@ -106,6 +106,21 @@ float get_function_variable (char name[]) {
   exit(1);
   return 0;
 }
+
+void ins_fun_par(float value, char name[]){
+  int i=is_defined_fun(function_name);
+  for (int k = 0; k < funtab[i].par_num; k++)
+  {
+    if (strcmp(name,funtab[i].function_parameters[k].name)==0)
+    {
+      funtab[i].function_parameters[k].val=value;
+    }
+    
+  }
+
+}
+
+
 // this function is responsible to insert a variable
 
 void insert(float value, char name[], data_type dt)
@@ -574,7 +589,10 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_ASSIGNMENT:
-      insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr));
+      if(!fun_active)
+        insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr));
+      else 
+        ins_fun_par(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr));
       return 1;
       break;
     case TOK_CALL:
@@ -633,6 +651,8 @@ void set_function_parameter(expr_t *expr)
     {
       funtab[pointer].function_parameters[current_parameter].val = execute_expr((expr_t *)expr->op_pair[0].operand->expr);
     }
+    else
+      return;
     if (current_parameter != 0)
     {
       printf("functions parameters do not match with the function definition");
@@ -877,7 +897,7 @@ void define_function()
   funtab[ptr_fun].start_token = current_token;
   function_boundary();
   funtab[ptr_fun].end_token = current_token;
-  funtab[ptr_fun].par_set = funtab[ptr_fun].par_num - 1;
+  funtab[ptr_fun].par_set = funtab[ptr_fun].par_num-1;
   ++ptr_fun;
 }
 
