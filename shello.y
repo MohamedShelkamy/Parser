@@ -156,7 +156,7 @@ While   : WHILE
 
 while_stmt : While lparen final_expr rparen lbrace code_block rbrace
            
-type_name : DATA_TYPE TOK_IDENT
+variable_declaration : DATA_TYPE TOK_IDENT
             {
             add_token_string(TOK_DT,$1);
             add_token_string(TOK_NAME,$2);
@@ -166,11 +166,11 @@ type_name : DATA_TYPE TOK_IDENT
 comma     : COMMA{add_token_type(TOK_COMMA);}
           ;
  
-parameter_list:
-               | type_name
-               | parameter_list comma type_name
+argument_list:
+               | variable_declaration
+               | argument_list comma variable_declaration
 
-function : type_name lparen parameter_list rparen lbrace code_block rbrace
+function : variable_declaration lparen argument_list rparen lbrace code_block rbrace
 
 
 input_list : {$$=create_expr(EXPR_UNARY,NULL,NULL,TOK_EMPTY);}
