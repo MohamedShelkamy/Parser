@@ -8,7 +8,7 @@ int yylex();
 
 %}
 
-%token EQ LPAREN RPAREN 
+%token LPAREN RPAREN 
        LBRACKET RBRACKET DIM PRINT SEMICOLON 
        INTEGER STRING TOK_IDENT LBRACE RBRACE IF ELSE
        DATA_TYPE OPERATION WHILE FOR COMMA FLOAT RETURN
@@ -28,6 +28,7 @@ int yylex();
 %type<expr>    expr
 %type<expr>    function_call
 %type<expr>    input_list
+%type<expr>    variable_declaration
 %type<name>    STRING
 %left          EQ
 %left          OPERATION
@@ -37,10 +38,14 @@ int yylex();
 %%
 
 builtin     : print
+              |
+              variable_declaration
             ;
 
 final_expr : expr
             {
+            printf("%f \n",execute_expr(precedence_expr_tree($1,NULL,$1)));
+            //precedence_expr_tree($1,NULL,$1);
             add_token_expr(TOK_EXPR,$1);
             }
             ;
@@ -48,8 +53,6 @@ final_expr : expr
 statement:  builtin tok_semicolon
             | 
             final_expr tok_semicolon
-            |
-            assigment 
             |
             tok_semicolon
             ;
@@ -72,10 +75,6 @@ code_block: statement
             function
             |
             code_block function
-            |
-            function_call tok_semicolon
-            |
-            code_block function_call tok_semicolon
             ;
                
 prog:       code_block 
@@ -157,11 +156,13 @@ While   : WHILE
 while_stmt : While lparen final_expr rparen lbrace code_block rbrace
            
 variable_declaration : DATA_TYPE TOK_IDENT
-            {
-            add_token_string(TOK_DT,$1);
-            add_token_string(TOK_NAME,$2);
-            }
-          ;
+                     {
+                      add_token_string(TOK_DT,$1);
+                      add_token_string(TOK_NAME,$2);
+                      $$ = create_expr_var(EXPR_UNARY,TOK_VAR,$2);
+                      set_data_type($$,$1); 
+                     }
+                     ;
 
 comma     : COMMA{add_token_type(TOK_COMMA);}
           ;
@@ -178,29 +179,11 @@ input_list : {$$=create_expr(EXPR_UNARY,NULL,NULL,TOK_EMPTY);}
              |input_list comma expr{$$=create_expr(EXPR_BINARY,$1,$3,TOK_INPUTLIST);}
                 
              
-function_call : expr LPAREN input_list RPAREN
+function_call : TOK_IDENT LPAREN input_list RPAREN
               {
-                add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_CALL)); 
+                $$=create_expr(EXPR_BINARY,create_expr_var(EXPR_UNARY,TOK_VAR,$1),$3,TOK_CALL); 
               }
               ;
-
-assigment :DATA_TYPE expr EQ expr tok_semicolon
-          { 
-          set_data_type($2,$1);
-          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$2,$4,TOK_ASSIGNMENT));  
-          }
-          | expr EQ expr tok_semicolon
-          {
-          set_data_type($1,"10");  
-          add_token_expr(TOK_EXPR,create_expr(EXPR_BINARY,$1,$3,TOK_ASSIGNMENT));  
-          }
-          |
-          DATA_TYPE expr tok_semicolon  
-          {
-           set_data_type($2,$1); 
-           add_token_expr(TOK_EXPR,create_expr(EXPR_UNARY,$2,NULL,TOK_ASSIGNMENT)); 
-          }
-          ;
 expr:
  
  INTEGER
@@ -210,6 +193,10 @@ expr:
   | FLOAT
   {
     $$=create_expr_const(EXPR_UNARY,TOK_NUMB,0,$1,DT_FLOAT);
+  }
+  | variable_declaration OPERATION expr
+  {
+   $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
   }
   | TOK_IDENT
   {
@@ -222,6 +209,11 @@ expr:
   | LPAREN expr RPAREN
   {
    $$=create_expr(EXPR_UNARY,$2,NULL,TOK_EXPR);
+  }
+  |
+  function_call
+  {
+   $$=$1;
   }
   ;
 %%

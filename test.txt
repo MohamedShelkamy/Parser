@@ -1,16 +1,1 @@
-int x=5;
-x=x+10;
-int y =9;
-while(x<17){
-  while(y<12){
-    print("aflam l2 ya 4e5na");
-    y=y+1;
-  }
-  int y =9;
-  if(x<10){
-   print(x);}
-  else{
-   print("bs bardo a7la msa l 4e5na");} 
-  x=x+1;
-}
-print("exit the loop");
+int x=1+2*3-6*2;

@@ -13,7 +13,8 @@ alpha     [A-Za-z]
 
 %%
 [ \t\r]+ 
-"="             {return (EQ);}
+"="             {sscanf(yytext, "%s", yylval.name); 
+                return(OPERATION);}
 "+"             { sscanf(yytext, "%s", yylval.name); 
                   return(OPERATION);}
 "/"             { sscanf(yytext, "%s", yylval.name); 

@@ -29,7 +29,7 @@ int ptr_arr = 0;
 
 // function name
 char function_name[100];
-int fun_active=0;
+int fun_active = 0;
 
 float getvalue(int i)
 {
@@ -92,34 +92,32 @@ float get_variable_value(char name[])
     return getvalue(i);
   }
 }
-float get_function_variable (char name[]) {
+float get_function_variable(char name[])
+{
   int i = is_defined_fun(function_name);
   for (int k = 0; k < funtab[i].par_num; k++)
   {
-    if (strcmp(name,funtab[i].function_parameters[k].name)==0)
+    if (strcmp(name, funtab[i].function_parameters[k].name) == 0)
     {
       return funtab[i].function_parameters[k].val;
     }
-    
   }
   printf("undefined variable");
   exit(1);
   return 0;
 }
 
-void ins_fun_par(float value, char name[]){
-  int i=is_defined_fun(function_name);
+void ins_fun_par(float value, char name[])
+{
+  int i = is_defined_fun(function_name);
   for (int k = 0; k < funtab[i].par_num; k++)
   {
-    if (strcmp(name,funtab[i].function_parameters[k].name)==0)
+    if (strcmp(name, funtab[i].function_parameters[k].name) == 0)
     {
-      funtab[i].function_parameters[k].val=value;
+      funtab[i].function_parameters[k].val = value;
     }
-    
   }
-
 }
-
 
 // this function is responsible to insert a variable
 
@@ -279,6 +277,36 @@ int yyerror(char *s)
   return 0;
 }
 
+int get_precedence(token_t operation)
+{
+  switch (operation)
+  {
+  case TOK_ASSIGNMENT:
+    return 15;
+    break;
+  case TOK_EEQ:
+    return 8;
+    break;
+
+  case TOK_PLUS:
+  case TOK_MINUS:
+    printf("plus or minus \n");
+    return 5;
+    break;
+
+  case TOK_DIV:
+  case TOK_MUL:
+    printf("division \n");
+    return 4;
+    break;
+
+  default:
+    printf("constant \n");
+    return -1;
+    break;
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 token_t get_operation(char var_name[])
@@ -331,6 +359,10 @@ token_t get_operation(char var_name[])
   else if (strcmp(var_name, "||") == 0)
   {
     return TOK_OR;
+  }
+  else if (strcmp(var_name, "=") == 0)
+  {
+    return TOK_ASSIGNMENT;
   }
   else
   {
@@ -497,11 +529,41 @@ void set_data_type(expr_t *expr, char dt[])
   }
 }
 
+
+// this function to sort the tree into the correct precedence
+
+expr_t *precedence_expr_tree(expr_t *current, expr_t *parent, expr_t *root)
+{ 
+
+  if (current->op_pair[0].operation == TOK_NUMB || current->op_pair[0].operation == TOK_VAR){
+    return root;
+  }
+  tokclosure_t temp = *current->op_pair[0].operand;
+  token_t next_operation = ((expr_t *)temp.expr)->op_pair[0].operation;
+  token_t current_operation = current->op_pair[0].operation;
+  if (get_precedence(current_operation) < get_precedence(next_operation))
+  {
+    current->op_pair[0].operand->expr=((expr_t*)temp.expr)->op_pair[1].operand->expr;
+    current->op_pair[0].operand->tok=TOK_EXPR;
+    ((expr_t*)temp.expr)->op_pair[1].operand->expr=(void*)current;
+    if(parent==NULL){
+      root=(expr_t*)temp.expr;
+    }
+    else{
+      parent->op_pair[0].operand=&temp;
+    }
+    return precedence_expr_tree(root, NULL ,root);
+  }
+  else
+  {
+    return precedence_expr_tree(current->op_pair[0].operand->expr, current, root);
+  }
+}
+
 // this function is responsible to execute any expression recursively
 
 float execute_expr(expr_t *expr)
 {
-
   tokclosure_t *operand = expr->op_pair[0].operand;  // first operand
   tokclosure_t *soperand = expr->op_pair[1].operand; // second operand
   switch (expr->kind)
@@ -520,8 +582,10 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_VAR:
-      if(!fun_active){
-        return get_variable_value(operand->var_name);}
+      if (!fun_active)
+      {
+        return get_variable_value(operand->var_name);
+      }
       return get_function_variable(operand->var_name);
       break;
 
@@ -589,11 +653,11 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_ASSIGNMENT:
-      if(!fun_active)
+      if (!fun_active)
         insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr));
-      else 
+      else
         ins_fun_par(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr));
-      return 1;
+      return 0;
       break;
     case TOK_CALL:
       call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
@@ -618,9 +682,9 @@ float call_function(expr_t *fun, expr_t *par)
 { // here we need to search for the function name and then go for these expressions
   strcpy(function_name, assign(fun));
   set_function_parameter(par);
-  fun_active=1;
+  fun_active = 1;
   execute_function(function_name);
-  fun_active=0;
+  fun_active = 0;
   return 0; // one by one and execute it to get the parameters then we will fill the function
 }
 
@@ -636,7 +700,7 @@ float execute_function(char name[])
     interpereter();
   }
   loops--;
-  current_token=current+1;
+  current_token = current + 1;
   return 0;
 }
 
@@ -712,7 +776,7 @@ void interpereter()
     display(Program_tokens[current_token]); // handle print statement
     break;
   case TOK_IF:
-    current_token = current_token + 2; // we access the expression token to check (true or false)
+    current_token = current_token + 2;      // we access the expression token to check (true or false)
     if (!execute_expr((expr_t *)Program_tokens[current_token].expr))
     {                                    // if false we will skip the true block
       current_token = current_token + 2; // by adding 2 we jump to execution block so we
@@ -897,7 +961,7 @@ void define_function()
   funtab[ptr_fun].start_token = current_token;
   function_boundary();
   funtab[ptr_fun].end_token = current_token;
-  funtab[ptr_fun].par_set = funtab[ptr_fun].par_num-1;
+  funtab[ptr_fun].par_set = funtab[ptr_fun].par_num - 1;
   ++ptr_fun;
 }
 

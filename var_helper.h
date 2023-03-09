@@ -155,6 +155,8 @@ void skip_branch();
 
 char *assign(expr_t *expr);
 
+expr_t * precedence_expr_tree(expr_t *current , expr_t *parent,expr_t *root);
+
 float execute_expr(expr_t *expr);
 
 token_t get_operation(char var_name[]);

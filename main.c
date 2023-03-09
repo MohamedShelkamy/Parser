@@ -3,13 +3,16 @@
 #include "var_helper.h"
 #include "main.h"
 #include "shello.tab.h"
+#include <stdlib.h>
 
 int v_flag = 0;
 int i_flag = 0;
 int d_flag = 0;
 
+
+
 int main(int argc, char *argv[])
-{
+{	
 	for (int i = 1; i < argc; i++)
 	{
 		if (argv[i][0] == '-')
