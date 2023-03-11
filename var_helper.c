@@ -290,18 +290,15 @@ int get_precedence(token_t operation)
 
   case TOK_PLUS:
   case TOK_MINUS:
-    printf("plus or minus \n");
     return 5;
     break;
 
   case TOK_DIV:
   case TOK_MUL:
-    printf("division \n");
     return 4;
     break;
 
   default:
-    printf("constant \n");
     return -1;
     break;
   }
@@ -309,8 +306,14 @@ int get_precedence(token_t operation)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-token_t get_operation(char var_name[])
-{
+token_t get_operation(char var_name[], char post_pre_fix[])
+{ 
+  if (strcmp(post_pre_fix, "check_equal")==0 && strcmp(var_name, "=") != 0)
+  {
+    fprintf(stderr, "invalid initialization , trying to make an operation to a variable declaration \n");
+    exit(1);
+  }
+  
 
   if (strcmp(var_name, "+") == 0)
   {
@@ -364,6 +367,27 @@ token_t get_operation(char var_name[])
   {
     return TOK_ASSIGNMENT;
   }
+  else if (strcmp(var_name, "++") == 0)
+  {
+    if (strcmp(post_pre_fix, "postfix") == 0)
+      return TOK_POSTPLUS; 
+    return TOK_PREPLUS;
+  }
+  else if (strcmp(var_name, "++") == 0)
+  {
+    if (strcmp(post_pre_fix, "postfix") == 0)
+      return TOK_POSTMINUS; 
+    return TOK_PREMINUS;
+  }
+  else if (strcmp(var_name, "&") == 0)
+  {
+    if (strcmp(post_pre_fix, "postfix") == 0)
+      {
+        fprintf(stderr, "invalid access to the address \n");
+        exit(1);
+      } 
+    return TOK_ADRESS;
+  }
   else
   {
     fprintf(stderr, "unexpected operation\n");
@@ -371,6 +395,8 @@ token_t get_operation(char var_name[])
   }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 expr_t *create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op)
 {
 
@@ -441,6 +467,11 @@ expr_t *create_expr_var(exprkind_t kind, token_t op, char var_name[100])
   }
   expr->kind = kind;
   tokclosure_t *operand = (tokclosure_t *)malloc(sizeof(tokclosure_t));
+   if (!operand)
+  {
+    fprintf(stderr, "Error: Out of memory\n");
+    exit(1);
+  }
   operand->tok = TOK_VAR;
   strncpy(operand->var_name, var_name, sizeof(operand->var_name) - 1);
   expr->op_pair[0].operand = operand;
@@ -534,14 +565,23 @@ void set_data_type(expr_t *expr, char dt[])
 
 expr_t *precedence_expr_tree(expr_t *current, expr_t *parent, expr_t *root)
 { 
-
   if (current->op_pair[0].operation == TOK_NUMB || current->op_pair[0].operation == TOK_VAR){
     return root;
   }
   tokclosure_t temp = *current->op_pair[0].operand;
   token_t next_operation = ((expr_t *)temp.expr)->op_pair[0].operation;
   token_t current_operation = current->op_pair[0].operation;
-  if (get_precedence(current_operation) < get_precedence(next_operation))
+  
+  
+  if(current->kind==EXPR_BINARY){
+  if (((expr_t*)current->op_pair[1].operand->expr)->op_pair[0].operation==TOK_EXPR)
+    {
+    current->op_pair[1].operand->expr=(void*)precedence_expr_tree((expr_t*)current->op_pair[1].operand->expr, NULL,(expr_t*)current->op_pair[1].operand->expr);
+    }
+  }
+  
+  
+  if (get_precedence(current_operation) < get_precedence(next_operation) && get_precedence(current_operation)!=-1)
   {
     current->op_pair[0].operand->expr=((expr_t*)temp.expr)->op_pair[1].operand->expr;
     current->op_pair[0].operand->tok=TOK_EXPR;
@@ -778,9 +818,9 @@ void interpereter()
   case TOK_IF:
     current_token = current_token + 2;      // we access the expression token to check (true or false)
     if (!execute_expr((expr_t *)Program_tokens[current_token].expr))
-    {                                    // if false we will skip the true block
-      current_token = current_token + 2; // by adding 2 we jump to execution block so we
-      skip_branch();                     // will skip ")" token
+    {                                       // if false we will skip the true block
+      current_token = current_token + 2;    // by adding 2 we jump to execution block so we
+      skip_branch();                        // will skip ")" token
     }
     else
     {

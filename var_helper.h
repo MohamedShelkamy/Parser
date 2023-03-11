@@ -36,7 +36,12 @@ typedef enum
 	TOK_NAME,
 	TOK_INPUTLIST,
 	TOK_CALL,
-	TOK_EMPTY
+	TOK_EMPTY,
+	TOK_PREPLUS, 
+	TOK_POSTPLUS,
+	TOK_PREMINUS, 
+	TOK_POSTMINUS,
+	TOK_ADRESS
 } token_t;
 
 typedef enum
@@ -159,7 +164,7 @@ expr_t * precedence_expr_tree(expr_t *current , expr_t *parent,expr_t *root);
 
 float execute_expr(expr_t *expr);
 
-token_t get_operation(char var_name[]);
+token_t get_operation(char var_name[],char post_pre_fix[]);
 
 data_type get_type(expr_t *expr);
 

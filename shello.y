@@ -12,7 +12,7 @@ int yylex();
        LBRACKET RBRACKET DIM PRINT SEMICOLON 
        INTEGER STRING TOK_IDENT LBRACE RBRACE IF ELSE
        DATA_TYPE OPERATION WHILE FOR COMMA FLOAT RETURN
-
+       UNARY_OPEARTION
 %union{
 	char name[100];
   float float_val;
@@ -23,6 +23,7 @@ int yylex();
 %type<name>    TOK_IDENT
 %type<name>    DATA_TYPE
 %type<name>    OPERATION
+%type<name>    UNARY_OPEARTION
 %type<int_val> INTEGER
 %type<float_val> FLOAT
 %type<expr>    expr
@@ -32,6 +33,7 @@ int yylex();
 %type<name>    STRING
 %left          EQ
 %left          OPERATION
+%left          UNARY_OPEARTION
 
 %start      prog
 
@@ -44,8 +46,9 @@ builtin     : print
 
 final_expr : expr
             {
+            int x=4;
+            printf("%d \n",x++);  
             printf("%f \n",execute_expr(precedence_expr_tree($1,NULL,$1)));
-            //precedence_expr_tree($1,NULL,$1);
             add_token_expr(TOK_EXPR,$1);
             }
             ;
@@ -142,9 +145,13 @@ Else          : ELSE
 
 if_stmt : If lparen final_expr rparen lbrace code_block rbrace Else lbrace code_block rbrace
           |
+          If lparen final_expr rparen lbrace code_block rbrace Else statement
+          |
           If lparen final_expr rparen lbrace code_block rbrace
           |
-          If lparen final_expr rparen statement
+          If lparen final_expr rparen statement Else lbrace code_block rbrace
+          |
+          If lparen final_expr rparen statement Else statement
           ;
 
 While   : WHILE 
@@ -195,16 +202,24 @@ expr:
     $$=create_expr_const(EXPR_UNARY,TOK_NUMB,0,$1,DT_FLOAT);
   }
   | variable_declaration OPERATION expr
-  {
-   $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
+  {    
+   $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2,"check_equal"));
   }
   | TOK_IDENT
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
   }
+  | TOK_IDENT UNARY_OPEARTION
+  {
+    $$=create_expr(EXPR_UNARY,create_expr_var(EXPR_UNARY,TOK_VAR,$1),NULL,get_operation($2,"postfix"));
+  }
+  | UNARY_OPEARTION TOK_IDENT
+  {
+    $$=create_expr(EXPR_UNARY,create_expr_var(EXPR_UNARY,TOK_VAR,$2),NULL,get_operation($1,"prefix"));
+  }
   | expr OPERATION expr 
   {
-    $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2));
+    $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2,""));
   }
   | LPAREN expr RPAREN
   {

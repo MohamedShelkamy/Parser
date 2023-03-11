@@ -12,7 +12,11 @@ digit	([0-9])
 alpha     [A-Za-z]
 
 %%
-[ \t\r]+ 
+[ \t\r]+
+
+"++"|"--"|"&" {sscanf(yytext, "%s", yylval.name); 
+                return(UNARY_OPEARTION);}
+
 "="             {sscanf(yytext, "%s", yylval.name); 
                 return(OPERATION);}
 "+"             { sscanf(yytext, "%s", yylval.name); 
