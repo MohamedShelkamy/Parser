@@ -1,14 +1,15 @@
 #define yyin stdin
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h> 
 #include "var_helper.h"
 #include "main.h"
 #include "shello.tab.h"
-#include <stdlib.h>
+
 
 int v_flag = 0;
 int i_flag = 0;
 int d_flag = 0;
-
 
 
 int main(int argc, char *argv[])
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
 	yyparse();
 	fclose(yyin);
 	if (i_flag)
-		interpereter();
+		//interpereter();
+		;
 	return 0;
 }

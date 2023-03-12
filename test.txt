@@ -1,1 +1,7 @@
-int x=1+2*3-6*2;
+int m(){
+    ;
+}
+int y;
+int z;
+int m;
+int x=1+1+1+1;

@@ -46,10 +46,8 @@ builtin     : print
 
 final_expr : expr
             {
-            int x=4;
-            printf("%d \n",x++);  
             printf("%f \n",execute_expr(precedence_expr_tree($1,NULL,$1)));
-            add_token_expr(TOK_EXPR,$1);
+            //add_token_expr(TOK_EXPR,$1);
             }
             ;
 
@@ -164,6 +162,7 @@ while_stmt : While lparen final_expr rparen lbrace code_block rbrace
            
 variable_declaration : DATA_TYPE TOK_IDENT
                      {
+                      printf("variable declaration \n");
                       add_token_string(TOK_DT,$1);
                       add_token_string(TOK_NAME,$2);
                       $$ = create_expr_var(EXPR_UNARY,TOK_VAR,$2);
@@ -202,12 +201,14 @@ expr:
     $$=create_expr_const(EXPR_UNARY,TOK_NUMB,0,$1,DT_FLOAT);
   }
   | variable_declaration OPERATION expr
-  {    
+  { 
+   printf("tok_declaration \n");    
    $$=create_expr(EXPR_BINARY,$1,$3,get_operation($2,"check_equal"));
   }
   | TOK_IDENT
   {
     $$=create_expr_var(EXPR_UNARY,TOK_VAR,$1);
+    set_data_type($$,"-1");
   }
   | TOK_IDENT UNARY_OPEARTION
   {

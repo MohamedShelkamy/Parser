@@ -120,7 +120,7 @@ int yyerror(char *s);
 
 void ins_fun_par(float value, char name[]);
 
-void insert(float value, char name[], data_type dt);
+void insert(float value, char name[], data_type dt, int declaration);
 
 float getvalue(int i);
 
