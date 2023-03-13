@@ -47,7 +47,7 @@ int is_defined_fun(char name[])
   int i;
   int flag = -1;
 
-  for (i = 0; i < ptr; i++)
+  for (i = 0; i < ptr_fun; i++)
   {
     if (strcmp(funtab[i].name, name) == 0)
     {
@@ -761,7 +761,7 @@ float execute_expr(expr_t *expr)
       return 0;
       break;
     case TOK_CALL:
-      // call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
+      call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
       return 0;
       break;
     default:
