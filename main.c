@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	yyparse();
 	fclose(yyin);
 	if (i_flag)
-		//interpereter();
-		;
+		interpereter();
+		
 	return 0;
 }

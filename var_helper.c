@@ -151,9 +151,10 @@ void insert(float value, char name[], data_type dt, int declaration)
     strcpy(tab[ptr].name, name);
     ptr++;
   }
-  else 
+  else
   {
-    if(declaration){
+    if (declaration)
+    {
       yyerror("you can not declare the variable twice");
     }
     if (tab[position].kind == DT_INT)
@@ -387,8 +388,7 @@ token_t get_operation(char var_name[], char post_pre_fix[])
   {
     if (strcmp(post_pre_fix, "postfix") == 0)
       return TOK_POSTPLUS;
-    
-    printf("pre plus \n");
+
     return TOK_PREPLUS;
   }
   else if (strcmp(var_name, "++") == 0)
@@ -435,7 +435,7 @@ expr_t *create_expr(exprkind_t kind, expr_t *left, expr_t *right, token_t op)
 
   if (kind == EXPR_UNARY)
   {
-    expr->op_pair[0].operand->tok = TOK_EXPR;    
+    expr->op_pair[0].operand->tok = TOK_EXPR;
   }
 
   if (kind == EXPR_BINARY || kind == EXPR_TERNARY)
@@ -544,7 +544,7 @@ void add_token_number(token_t tok, int int_val)
 
 void add_token_expr(token_t tok, expr_t *expr)
 {
-  
+
   tokclosure_t new_token;
   new_token.tok = tok;
   new_token.expr = (void *)expr;
@@ -594,14 +594,12 @@ expr_t *precedence_expr_tree(expr_t *current, expr_t *parent, expr_t *root)
   {
     if (((expr_t *)current->op_pair[1].operand->expr)->op_pair[0].operation == TOK_EXPR)
     {
-      printf("see the right side \n");
       current->op_pair[1].operand->expr = (void *)precedence_expr_tree((expr_t *)current->op_pair[1].operand->expr, NULL, (expr_t *)current->op_pair[1].operand->expr);
     }
   }
 
   if (get_precedence(current_operation) < get_precedence(next_operation) && get_precedence(current_operation) != -1)
   {
-    printf("exchange between the nodes \n");
     current->op_pair[0].operand->expr = ((expr_t *)temp.expr)->op_pair[1].operand->expr;
     current->op_pair[0].operand->tok = TOK_EXPR;
     ((expr_t *)temp.expr)->op_pair[1].operand->expr = (void *)current;
@@ -611,13 +609,12 @@ expr_t *precedence_expr_tree(expr_t *current, expr_t *parent, expr_t *root)
     }
     else
     {
-      parent->op_pair[0].operand = &temp;
+      parent->op_pair[0].operand->expr = temp.expr;
     }
     return precedence_expr_tree(root, NULL, root);
   }
   else
   {
-    printf("go to next left child \n");
     return precedence_expr_tree(current->op_pair[0].operand->expr, current, root);
   }
 }
@@ -645,51 +642,51 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_VAR:
-      strcpy(name_var,operand->var_name);
+      strcpy(name_var, operand->var_name);
       if (!fun_active)
       {
         return get_variable_value(name_var);
       }
       return get_function_variable(name_var);
       break;
-    
-    case TOK_POSTMINUS :
-      strcpy(name_var,operand->var_name);
+
+    case TOK_POSTMINUS:
+      strcpy(name_var, operand->var_name);
       if (!fun_active)
       {
         return get_variable_value(name_var);
       }
       return get_function_variable(name_var);
-      
-      break;    
-    
-    case TOK_POSTPLUS :
-      strcpy(name_var,((expr_t*)operand->expr)->op_pair[0].operand->var_name);
+
+      break;
+
+    case TOK_POSTPLUS:
+      strcpy(name_var, ((expr_t *)operand->expr)->op_pair[0].operand->var_name);
       if (!fun_active)
       {
         return get_variable_value(name_var);
       }
       return get_function_variable(name_var);
-      break; 
-    
-    case TOK_PREMINUS :
-      strcpy(name_var,operand->var_name);
+      break;
+
+    case TOK_PREMINUS:
+      strcpy(name_var, operand->var_name);
       if (!fun_active)
       {
-        return get_variable_value(name_var)-1;
+        return get_variable_value(name_var) - 1;
       }
-      return get_function_variable(name_var)-1;
-      break; 
-    
-    case TOK_PREPLUS :    
-      strcpy(name_var,((expr_t*)operand->expr)->op_pair[0].operand->var_name);
+      return get_function_variable(name_var) - 1;
+      break;
+
+    case TOK_PREPLUS:
+      strcpy(name_var, ((expr_t *)operand->expr)->op_pair[0].operand->var_name);
       if (!fun_active)
       {
-        return get_variable_value(name_var)+1;
+        return get_variable_value(name_var) + 1;
       }
-      return get_function_variable(name_var)+1;
-      break; 
-    
+      return get_function_variable(name_var) + 1;
+      break;
+
     case TOK_EXPR:
       return execute_expr((expr_t *)operand->expr);
       break;
@@ -754,17 +751,17 @@ float execute_expr(expr_t *expr)
       break;
 
     case TOK_ASSIGNMENT:
-      if (!fun_active){
-        insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr),0);
-        //insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), DT_INT,0);
-      }      
+      if (!fun_active)
+      {
+        insert(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr), get_type((expr_t *)operand->expr), 0);
+      }
       else
         ins_fun_par(execute_expr((expr_t *)soperand->expr), assign((expr_t *)operand->expr));
-      
+
       return 0;
       break;
     case TOK_CALL:
-      //call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
+      // call_function((expr_t *)operand->expr, (expr_t *)soperand->expr);
       return 0;
       break;
     default:
@@ -852,7 +849,7 @@ data_type get_type(expr_t *expr)
   data_type kind = expr->op_pair[0].operand->kind;
   int pos = is_defined(expr->op_pair[0].operand->var_name);
   if (kind != DT_INT && kind != DT_FLOAT)
-  {   
+  {
     if (pos == -1)
     {
       printf("error a variable without data type initialization\n");
@@ -863,12 +860,13 @@ data_type get_type(expr_t *expr)
       return tab[pos].kind;
     }
   }
-  else{
-    if (pos!=-1)
-   {
-    printf("you can not decalre the variable twice\n");
-    exit(1);
-   }
+  else
+  {
+    if (pos != -1)
+    {
+      printf("you can not decalre the variable twice\n");
+      exit(1);
+    }
   }
   return kind;
 }
@@ -880,18 +878,18 @@ void interpereter()
   if (current_token >= Program_tokens_len)
     return;
   token_t tok = Program_tokens[current_token].tok;
-  switch (tok)                              // this switch case is responsible to check for the different tok closure in our serilaized vector
+  switch (tok) // this switch case is responsible to check for the different tok closure in our serilaized vector
   {
-  case TOK_PRINT:                           // case print
+  case TOK_PRINT: // case print
     current_token = current_token + 2;
     display(Program_tokens[current_token]); // handle print statement
     break;
   case TOK_IF:
-    current_token = current_token + 2;     // we access the expression token to check (true or false)
+    current_token = current_token + 2; // we access the expression token to check (true or false)
     if (!execute_expr((expr_t *)Program_tokens[current_token].expr))
-    {                                      // if false we will skip the true block
-      current_token = current_token + 2;   // by adding 2 we jump to execution block so we
-      skip_branch();                       // will skip ")" token
+    {                                    // if false we will skip the true block
+      current_token = current_token + 2; // by adding 2 we jump to execution block so we
+      skip_branch();                     // will skip ")" token
     }
     else
     {
@@ -902,8 +900,7 @@ void interpereter()
     break; // if true we continue normally
 
   case TOK_EXPR:
-    printf("expr \n");
-    execute_expr(precedence_expr_tree((expr_t *)Program_tokens[current_token].expr,NULL,(expr_t *)Program_tokens[current_token].expr));
+    execute_expr(precedence_expr_tree((expr_t *)Program_tokens[current_token].expr, NULL, (expr_t *)Program_tokens[current_token].expr));
     break;
 
   case TOK_ELSE: // if we reached this token it means we took the if branch so we have to skip this block
@@ -914,21 +911,14 @@ void interpereter()
     while_handler();
     break;
   case TOK_DT:
-    printf("TOK_DT");
-    if(Program_tokens[current_token+2].tok == TOK_LPAREN)
+    if (Program_tokens[current_token + 2].tok == TOK_LPAREN)
       define_function();
-    else
-      if(Program_tokens[current_token+2].tok == TOK_SEMICOLON){   // this line it means we will initialize a variable 
-        insert(0,Program_tokens[current_token+1].var_name,get_par_type(Program_tokens[current_token].var_name),1);
-        printf("define a variable \n");
-      }
-    
-    break;
-  case TOK_NAME:
-    printf("tok_name \n");
+    else if (Program_tokens[current_token + 2].tok == TOK_SEMICOLON)
+    { // this line it means we will initialize a variable
+      insert(0, Program_tokens[current_token + 1].var_name, get_par_type(Program_tokens[current_token].var_name), 1);
+    }
     break;
   default:
-    printf("skip token \n");
     break;
   }
   current_token++;
